@@ -8,3 +8,4 @@ tiktoken
 kmeans_pytorch
 recbole
 sentence-transformers
+python-dotenv
