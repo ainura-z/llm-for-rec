@@ -1,6 +1,6 @@
 import torch
 import typing as tp
-from llm4rec.tasks import RetrievalRecommender
+from llm4rec.tasks.information_retrieval import RetrievalRecommender
 from recbole.model.abstract_recommender import SequentialRecommender
 from recbole.data.dataset import Dataset
 

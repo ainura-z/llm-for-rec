@@ -1,6 +1,6 @@
 import typing as tp
 import re
-from llm4rec.tasks import Recommender
+from llm4rec.tasks.base_recommender import Recommender
 from langchain_openai import OpenAI
 
 
