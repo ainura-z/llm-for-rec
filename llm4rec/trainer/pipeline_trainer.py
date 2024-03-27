@@ -42,7 +42,7 @@ class PipelineTrainer(Trainer):
         )
 
         num_sample = 0
-        for batched_data in enumerate(iter_data):
+        for batched_data in iter_data:
             num_sample += len(batched_data)
             interaction, history_index, positive_u, positive_i = batched_data
             batch_size = len(interaction["user_id"])
@@ -56,12 +56,14 @@ class PipelineTrainer(Trainer):
                     interaction[inter_idx]["item_length"],
                 )
                 history_names = eval_data.dataset.id2text(history_ids[:history_length])
+                history_item_ids = eval_data.dataset.id2token("item_id", history_ids[:history_length])
+                prev_interactions = dict(zip(history_item_ids, history_names))
 
                 # model part
                 candidates = self.model.recommend(
-                    prev_inreactions=history_names,
-                    search_type="similarity_score_threshold",
-                    search_kwargs=self.config["search_kwargs"],
+                    user_profile="",
+                    prev_interactions=prev_interactions,
+                    top_k=config['search_kwargs']['k']
                 )
                 candidate_ids = eval_data.dataset.token2id("item_id", candidates)
                 
