@@ -1,7 +1,10 @@
 langchain  
 langchain-openai 
 faiss-cpu
+faiss-gpu
 python-dotenv
 openai
 tiktoken
+kmeans_pytorch
 recbole
+sentence-transformers

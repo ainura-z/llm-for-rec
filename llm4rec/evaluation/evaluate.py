@@ -1,5 +1,5 @@
 from llm4rec.dataset import RecboleSeqDataset
-from llm4rec.tasks.information_retrieval import RecBoleRetrievalRecommender
+from llm4rec.tasks import RecBoleRetrievalRecommender
 from llm4rec.trainer import PipelineTrainer
 from recbole.data.utils import data_preparation
 from recbole.config import Config
