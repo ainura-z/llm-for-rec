@@ -74,12 +74,12 @@ class RetrievalRecommender(Recommender):
         vectorstore = FAISS.from_documents(docs, self.embeddings)
 
         self.retriever = vectorstore.as_retriever(
-            search_type=search_type, search_kwargs=search_kwargs
+            search_type=search_type, search_kwargs=search_kwargs.copy()
         )
         self.query = query if query else self.base_query
 
     def _prepare_prev_interactions(self, prev_interactions: tp.List[str]) -> str:
-        prev_inreactions = " ".join(
+        prev_interactions = " ".join(
             [
                 f"Content-{idx}: {content}"
                 for idx, content in enumerate(prev_interactions)
@@ -118,8 +118,8 @@ class RetrievalRecommender(Recommender):
             raise ValueError(
                 f"The user must have at least one interaction with the content."
             )
-        prev_items = self._prepare_prev_interactions(prev_interactions.values())
-        self._set_top_k(top_k + len(prev_items) if filter_viewed else top_k)
+        prev_items = self._prepare_prev_interactions(list(prev_interactions.values()))
+        self._set_top_k(top_k + len(prev_interactions.values()) if filter_viewed else top_k)
 
         query = self.query.format(user_profile=user_profile, user_history=prev_items)
         documents = self.retriever.get_relevant_documents(query)

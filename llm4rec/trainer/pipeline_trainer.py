@@ -63,10 +63,10 @@ class PipelineTrainer(Trainer):
                 candidates = self.model.recommend(
                     user_profile="",
                     prev_interactions=prev_interactions,
-                    top_k=config['search_kwargs']['k']
+                    top_k=self.config['search_kwargs']['k']
                 )
                 candidate_ids = eval_data.dataset.token2id("item_id", candidates)
-                
+
                 # scores for metrics
                 for i, id in enumerate(candidate_ids):
                     scores[inter_idx, id] = max(
