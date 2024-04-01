@@ -4,4 +4,3 @@ source_column:
     item_id:token
 search_kwargs:
     k: 20
-    score_threshold: 0.5
