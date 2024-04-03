@@ -31,8 +31,8 @@ class RetrievalRecommender(Recommender):
         self,
         items_info_path: str,
         embeddings: Embeddings = None,
-        csv_args: tp.Dict[tp.Any, tp.Any] = None,
-        source_column: str = "item_id",
+        csv_loader_args: tp.Dict[tp.Any, tp.Any] = dict(csv_args=None, 
+        source_column='item_id'),
         text_splitter_args: tp.Dict[str, tp.Any] = dict(
             chunk_size=1000, chunk_overlap=0
         ),
@@ -48,8 +48,7 @@ class RetrievalRecommender(Recommender):
         Args:
             items_info_path (str): The file path to the data file containing info about items.
             embeddings (Embeddings): The embeddings model instance
-            csv_args (Dict[Any, Any], optional): Additional arguments for CSVLoader. Defaults to None.
-            source_column (str, optional): The column name for the source data in the CSV file. Defaults to "item_id".
+            csv_loader_args (Dict[Any, Any], optional): Additional arguments for CSVLoader. Defaults to {"source_column":"item_id", "csv_args":None}.
             text_splitter_args (Dict[str, Any], optional): Additional arguments for CharacterTextSplitter. Defaults to {"chunk_size": 1000, "chunk_overlap": 0}.
             search_kwargs: (Dict[str, Any], optional): Additional argumnts for retriever, could be number of k items to retrieve
             emb_model_name: (str, optional): The name of the embedding model if no embeddings are passed
@@ -60,7 +59,7 @@ class RetrievalRecommender(Recommender):
         if not os.path.isfile(items_info_path):
             raise FileNotFoundError("CSV file not found.")
         self.loader = CSVLoader(
-            file_path=items_info_path, source_column=source_column, csv_args=csv_args
+            file_path=items_info_path, **csv_loader_args
         )
         documents = self.loader.load()
         self.text_splitter = CharacterTextSplitter(**text_splitter_args)
