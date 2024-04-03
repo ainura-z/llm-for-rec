@@ -63,7 +63,7 @@ class PipelineTrainer(Trainer):
                 user_profile = eval_data.dataset.id2token("user_id", user_id)
 
                 # model part
-                candidates = self.model.recommend(
+                candidates = self.model.run(
                     user_profile=user_profile,
                     prev_interactions=prev_interactions,
                     top_k=self.config['search_kwargs']['k']

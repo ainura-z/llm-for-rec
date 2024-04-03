@@ -3,6 +3,8 @@ from llm4rec.tasks.information_retrieval.general_retriever import (
 )
 from llm4rec.tasks.information_retrieval.recbole_retriever import RecBoleRetrievalRecommender
 from llm4rec.tasks.ranker.openai_ranker import OpenAIRanker
+from llm4rec.tasks.ranker.general_ranker import RankerRecommender
+
 
 __all__ = [
     "RetrievalRecommender",

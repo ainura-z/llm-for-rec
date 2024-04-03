@@ -68,3 +68,7 @@ class RecboleSeqDataset(SequentialDataset):
     def id2text(self, id: int) -> str:
         # internal id to text
         return self.item_text[id]
+        
+    def token2text(self, token: str) -> str:
+        internal_id = self.token2id('item_id', token)
+        return self.id2text(internal_id)
