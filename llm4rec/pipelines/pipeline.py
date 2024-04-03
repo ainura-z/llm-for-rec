@@ -27,6 +27,7 @@ class Pipeline(PipelineBase):
             if isinstance(task, RetrievalRecommender):
                 candidates = outputs
                 candidate_texts = self.token2text(candidates)
+                inputs['retrieved_items'] = candidates
                 inputs['candidates'] = dict(zip(candidates, candidate_texts))
             elif isinstance(task, RankerRecommender):
                 ranked_items = outputs
@@ -34,7 +35,7 @@ class Pipeline(PipelineBase):
 
         if 'ranked_items' in inputs:
             return inputs['ranked_items']
-        elif 'candidates' in inputs:
-            return inputs['candidates']
+        elif 'retrieved_items' in inputs:
+            return inputs['retrieved_items']
         else:
             return outputs
