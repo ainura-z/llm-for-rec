@@ -1,3 +1,3 @@
 # llm-for-rec
 
-![project plan](/docs/imgs/plan.PNG)
+![project plan](/docs/imgs/plan2.jpg)
