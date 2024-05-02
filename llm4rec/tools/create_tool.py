@@ -1,29 +1,54 @@
-import typing as tp
+from langchain.pydantic_v1 import BaseModel, Field
+from langchain.tools import StructuredTool,  BaseTool
+from langchain_core.tools import ToolException
 from functools import partial
+import typing as tp
+from llm4rec.tasks.base_recommender import Recommender
 
-from langchain.tools import StructuredTool
-from langchain_core.pydantic_v1 import BaseModel, Field
-
-from llm4rec.tasks import Recommender
-
-
-class BaselInput(BaseModel):
-    """Input to the task."""
-
-    prev_interactions: tp.List[str] = Field(
+class BaseInput(BaseModel):
+    """Input for tool"""
+    
+    user_profile: str = Field(description='user profile description')
+    prev_interactions: tp.Dict[str, str] = Field(
         description="previous interactions for model"
     )
 
 
-def _get_reco(task, **kwargs) -> tp.List[str]:
-    recos = task.recommend(**kwargs)
-    return recos
+"""class BaseRecommendTool(BaseTool):
+    name: str = "Basic Recommendation"
+    description: str = "This tool does something"
+    return_direct: bool = True     
+
+    def __init__(self, task: Recommender, ):
+        super(BaseRecommendTool, self).__init__(task=task,
+                                                name=name, 
+                                                description=description,
+                                                args_schema=args_schema)
+       
+    def _run(self, **kwargs) -> tp.List[tp.Any]:
+        recos = self.task.recommend(**kwargs)
+        return recos
+    
+    def _arun(self, **kwargs) -> tp.List[tp.Any]:
+        recos = self.task.recommend(**kwargs)
+        return recos"""
 
 
-async def _aget_reco(task, **kwargs) -> tp.List[str]:
-    recos = task.recommend(**kwargs)
-    return recos
+def _recommend(task, **kwargs) -> tp.List[tp.Any]:
+    rec_output = task.recommend(**kwargs)
+    return rec_output
 
+
+async def _arecommend(task, **kwargs) -> tp.List[tp.Any]:
+    rec_output = task.recommend(**kwargs)
+    return rec_output
+
+def _handle_error(error: ToolException) -> str:
+    return (
+        "The following errors occurred during tool execution:"
+        + error.args[0]
+        + "Please try another tool."
+    )
 
 def create_tool(
     task: Recommender,
@@ -49,14 +74,14 @@ def create_tool(
     Returns:
         (Tool): Tool class to pass to an agent
     """
-    args_schema = args_schema or BaselInput
+    args_schema = args_schema or BaseInput
 
     func = partial(
-        _get_reco,
+        _recommend,
         task=task,
     )
     afunc = partial(
-        _aget_reco,
+        _arecommend,
         task=task,
     )
 
@@ -69,7 +94,8 @@ def create_tool(
             args_schema=args_schema,
             return_direct=return_direct,
             infer_schema=infer_schema,
+            handle_tool_error=_handle_error,
             **kwargs,
         )
     except Exception as e:
-        raise ValueError(f"Error creating tool: {e}")
+        raise ValueError(f"Error while creating tool: {e}")

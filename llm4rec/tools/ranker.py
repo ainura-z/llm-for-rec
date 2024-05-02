@@ -5,17 +5,18 @@ from llm4rec.tools import create_tool
 from llm4rec.tasks.base_recommender import Recommender
 
 
-class BaseInput(BaseModel):
-    """Input for tool"""
-    
-    user_profile: str = Field(description='user profile description')
+class RankerInput(BaseModel):
+    """Input for ranker tool"""
     prev_interactions: tp.Dict[str, str] = Field(
         description="previous interactions for model"
     )
+    candidates: tp.Dict[str, str] = Field(
+        description="candidate items for recommendation from previous step"
+    )
 
 
-def create_retrieval_tool(
-    retrieval: Recommender,
+def create_ranker_tool(
+    ranker: Recommender,
     name: str = "retrieval_recommender",
     description: str = (
         """Search content that is most similar to content 
@@ -23,7 +24,7 @@ def create_retrieval_tool(
         If you have any questions about searching related content, 
         you should use this tool"""
     ),
-    args_schema: tp.Optional[BaseModel] = None,
+    args_schema: tp.Optional[BaseModel] = RankerInput,
     return_direct: bool = False,
     infer_schema: bool = True,
 ) -> Tool:
@@ -43,7 +44,7 @@ def create_retrieval_tool(
         (Tool): Tool class to pass to an agent
     """
     return create_tool(
-        task=retrieval,
+        task=ranker,
         name=name,
         description=description,
         args_schema=args_schema,
