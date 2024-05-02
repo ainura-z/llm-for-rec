@@ -42,7 +42,7 @@ class PipelineTrainer(Trainer):
         )
 
         num_sample = 0
-        for batched_data in enumerate(iter_data):
+        for batched_data in iter_data:
             num_sample += len(batched_data)
             interaction, history_index, positive_u, positive_i = batched_data
             batch_size = len(interaction["user_id"])
@@ -50,21 +50,26 @@ class PipelineTrainer(Trainer):
             scores = torch.full((batch_size, self.model.n_items), -10000.0)
 
             for inter_idx in range(batch_size):
+                user_id = interaction[inter_idx]["user_id"]
                 history_ids = interaction[inter_idx]["item_id_list"]
                 history_length = min(
                     self.config["MAX_ITEM_LIST_LENGTH"],
                     interaction[inter_idx]["item_length"],
                 )
                 history_names = eval_data.dataset.id2text(history_ids[:history_length])
+                history_item_ids = eval_data.dataset.id2token("item_id", history_ids[:history_length])
+                prev_interactions = dict(zip(history_item_ids, history_names))
+
+                user_profile = eval_data.dataset.id2token("user_id", user_id)
 
                 # model part
-                candidates = self.model.recommend(
-                    prev_inreactions=history_names,
-                    search_type="similarity_score_threshold",
-                    search_kwargs=self.config["search_kwargs"],
+                candidates = self.model.run(
+                    user_profile=user_profile,
+                    prev_interactions=prev_interactions,
+                    top_k=self.config['search_kwargs']['k']
                 )
                 candidate_ids = eval_data.dataset.token2id("item_id", candidates)
-                
+
                 # scores for metrics
                 for i, id in enumerate(candidate_ids):
                     scores[inter_idx, id] = max(

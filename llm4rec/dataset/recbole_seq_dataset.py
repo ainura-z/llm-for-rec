@@ -43,12 +43,16 @@ class RecboleSeqDataset(SequentialDataset):
         with open(item_file_path, "r", encoding="utf-8") as file:
             col_names = file.readline().strip().split("\t")
             col_names = [col.split(":")[0] for col in col_names]
-            text_col_idx = col_names.index(self.config["text_col"])
+            
+            if type(self.config["text_col"]) == type(list):
+                text_col_idx = [col_names.index(self.config["text_col"])]
+            else:
+                text_col_idx = [col_names.index(col_name) for col_name in self.config["text_col"]]
 
             for line in file:
                 description = line.strip().split("\t")
                 item_id = description[0]
-                text = description[text_col_idx]
+                text = " ".join([description[col_idx] for col_idx in text_col_idx])
                 token_text[item_id] = text
 
         # internal id to text mapping
@@ -64,3 +68,7 @@ class RecboleSeqDataset(SequentialDataset):
     def id2text(self, id: int) -> str:
         # internal id to text
         return self.item_text[id]
+        
+    def token2text(self, token: str) -> str:
+        internal_id = self.token2id('item_id', token)
+        return self.id2text(internal_id)
