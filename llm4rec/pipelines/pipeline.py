@@ -24,18 +24,8 @@ class Pipeline(PipelineBase):
             if self.verbose:
                 print(f"Task {i+1} outputs: ", outputs)
 
-            if isinstance(task, RetrievalRecommender):
-                candidates = outputs
-                candidate_texts = self.token2text(candidates)
-                inputs['retrieved_items'] = candidates
-                inputs['candidates'] = dict(zip(candidates, candidate_texts))
-            elif isinstance(task, RankerRecommender):
-                ranked_items = outputs
-                inputs['ranked_items'] = ranked_items
-
-        if 'ranked_items' in inputs:
-            return inputs['ranked_items']
-        elif 'retrieved_items' in inputs:
-            return inputs['retrieved_items']
-        else:
-            return outputs
+            candidate_texts = self.token2text(outputs)
+            outputs = dict(zip(outputs, candidate_texts))
+            inputs['candidates'] = outputs
+            
+        return list(outputs.keys())

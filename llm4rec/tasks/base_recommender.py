@@ -6,7 +6,7 @@ class Recommender(metaclass=ABCMeta):
     """Base class for recommender model."""
 
     @abstractmethod
-    def recommend(self, *args: tp.Any, **kwargs: tp.Any) -> tp.Any:
+    def recommend(self, candidates: tp.Any, top_k: int, *args: tp.Any, **kwargs: tp.Any) -> tp.Any:
         """Creating recommendations.
 
         Returns:
