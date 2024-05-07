@@ -1,7 +1,5 @@
 import typing as tp
 
-import pandas as pd
-
 
 def prepare_input_per_users(
     prompt: str,
