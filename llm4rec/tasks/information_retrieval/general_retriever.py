@@ -112,6 +112,7 @@ class RetrievalRecommender(Recommender):
         prev_interactions: tp.Dict[str, str],
         top_k: int,
         filter_viewed: bool = True,
+        candidates: tp.Any = None
     ) -> tp.List[tp.Any]:
         if len(prev_interactions) == 0:
             raise ValueError(

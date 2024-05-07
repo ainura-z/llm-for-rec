@@ -52,7 +52,7 @@ class RecboleSeqDataset(SequentialDataset):
             for line in file:
                 description = line.strip().split("\t")
                 item_id = description[0]
-                text = " ".join([description[col_idx] for col_idx in text_col_idx])
+                text = "; ".join([f'{col_names[col_idx]}: {description[col_idx]}' for col_idx in text_col_idx])
                 token_text[item_id] = text
 
         # internal id to text mapping
