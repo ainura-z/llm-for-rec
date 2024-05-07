@@ -17,21 +17,23 @@ class RankerInput(BaseModel):
 
 def create_ranker_tool(
     ranker: Recommender,
-    name: str = "retrieval_recommender",
+    name: str = "ranker_recommender",
     description: str = (
-        """Search content that is most similar to content 
-        from previous interactions with the recommender system. 
-        If you have any questions about searching related content, 
-        you should use this tool"""
+        """
+        The tool is useful to refine items order (for better experiences) or remove unwanted items from the top. \
+        The input of the tool should be previous interaction data (item ids and their text data and candidate recommendation items (item ids and ther text data). \
+        The candidates depend on previous tool using. Only when there is a list of candidate items to recommend \
+        this tool could be used.
+        """
     ),
     args_schema: tp.Optional[BaseModel] = RankerInput,
     return_direct: bool = False,
     infer_schema: bool = True,
 ) -> Tool:
-    """Create a tool to do retrieval recommendendation.
+    """Create a tool to do ranker recommendendation.
 
     Args:
-        retrieval (Recommender): The retrieval to use for the retrieval
+        ranker (Recommender): The ranker to use 
         name (str): The name for the tool. This will be passed to the language model,
             so should be unique and somewhat descriptive.
         description (str): The description for the tool. This will be passed to the language

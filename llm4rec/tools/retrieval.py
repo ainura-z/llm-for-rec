@@ -5,25 +5,30 @@ from llm4rec.tools import create_tool
 from llm4rec.tasks.base_recommender import Recommender
 
 
-class BaseInput(BaseModel):
+class RetrievalBaseInput(BaseModel):
     """Input for tool"""
     
-    user_profile: str = Field(description='user profile description')
+    user_profile: str = Field(description='User profile description')
     prev_interactions: tp.Dict[str, str] = Field(
-        description="previous interactions for model"
+        description="Previous interactions of the user"
     )
+    top_k: int = Field(description='Number of items to retrieve')
 
 
 def create_retrieval_tool(
     retrieval: Recommender,
     name: str = "retrieval_recommender",
     description: str = (
-        """Search content that is most similar to content 
-        from previous interactions with the recommender system. 
-        If you have any questions about searching related content, 
-        you should use this tool"""
+        """
+        The tool can find similar items for specific list of previous items. \
+        Never use this tool if you don't want to find some items similar with provided items. \
+        There is a similarity score threshold in the tool, only {item}s with similarity above the threshold would be kept. \
+        Besides, the tool could be used to retrieve the items similar to previous items for ranking tool to refine. \
+        The input of the tool should be a list of previous item titles/names, which should be a Python list of strings, the user_profile information in type of string and top_k which is number of items to retrieve \
+        Do not fake any item names.
+        """
     ),
-    args_schema: tp.Optional[BaseModel] = None,
+    args_schema: tp.Optional[BaseModel] = RetrievalBaseInput,
     return_direct: bool = False,
     infer_schema: bool = True,
 ) -> Tool:
