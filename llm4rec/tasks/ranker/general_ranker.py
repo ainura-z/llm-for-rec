@@ -92,7 +92,7 @@ class RankerRecommender(Recommender):
         self,
         prev_interactions: tp.Dict[str, str],
         candidates: tp.Dict[str, str],
-        top_k: int
+        top_k: int = None
     ) -> tp.List[tp.Any]:
         if len(candidates) < 2:
             raise ValueError(
