@@ -15,7 +15,7 @@ class RankerInput(BaseModel):
     )
 
 
-def create_ranker_tool(
+def create_ranking_tool(
     ranker: Recommender,
     name: str = "ranker_recommender",
     description: str = (
