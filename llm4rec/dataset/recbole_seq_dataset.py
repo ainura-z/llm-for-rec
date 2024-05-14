@@ -28,14 +28,55 @@ class RecboleSeqDataset(SequentialDataset):
         super().__init__(config)
         self.data_path = config["data_path"]
         self.dataset_name = config["dataset"]
-        self.id_token = self.field2id_token["item_id"]
+        self.item_id_token = self.field2id_token["item_id"]
+        self.user_id_token = self.field2id_token["user_id"]
         self.preprocess_text_fn = preprocess_text_fn
-        self.item_text = self.load_text()
+        self.user_text = self.load_user_text()
+        self.item_text = self.load_item_text()
 
-    def load_text(self) -> tp.List[str]:
+    def load_user_text(self) -> tp.List[str]:
         # from internal ids to text
         token_text = {}
-        item_text = np.full(len(self.id_token), "", dtype=object)
+        user_text = np.full(len(self.user_id_token), "", dtype=object)
+        user_text[0] = "[PAD]"
+        user_file_path = osp.join(self.data_path, f"{self.dataset_name}.user")
+        
+        if not osp.exists(user_file_path):
+            self.logger.info(
+                "Dataset seem to have no information about users."
+            )
+            return user_text
+        
+        # token id to text mapping
+        with open(user_file_path, "r", encoding="utf-8") as file:
+            col_names = file.readline().strip().split("\t")
+            col_names = [col.split(":")[0] for col in col_names]
+            
+            text_col_idx = list(range(1, len(col_names)))
+            #print(col_names)
+            
+            for line in file:
+                description = line.strip().split("\t")
+                user_id = description[0]
+                text = "; ".join([f'{col_names[col_idx]}: {description[col_idx]}' for col_idx in text_col_idx])
+                #print(user_id, text)
+                token_text[user_id] = text
+
+        # internal id to text mapping
+        for i, token in enumerate(self.user_id_token):
+            if token == "[PAD]":
+                continue
+            raw_text = token_text[token]
+            #if self.preprocess_text_fn:
+            #    raw_text = self.preprocess_text_fn(raw_text)
+            user_text[i] = raw_text
+        return user_text
+
+
+    def load_item_text(self) -> tp.List[str]:
+        # from internal ids to text
+        token_text = {}
+        item_text = np.full(len(self.item_id_token), "", dtype=object)
         item_text[0] = "[PAD]"
         item_file_path = osp.join(self.data_path, f"{self.dataset_name}.item")
 
@@ -56,7 +97,7 @@ class RecboleSeqDataset(SequentialDataset):
                 token_text[item_id] = text
 
         # internal id to text mapping
-        for i, token in enumerate(self.id_token):
+        for i, token in enumerate(self.item_id_token):
             if token == "[PAD]":
                 continue
             raw_text = token_text[token]
@@ -64,11 +105,19 @@ class RecboleSeqDataset(SequentialDataset):
                 raw_text = self.preprocess_text_fn(raw_text)
             item_text[i] = raw_text
         return item_text
-
-    def id2text(self, id: int) -> str:
+    
+    def user_id2text(self, id: int) -> str:
+        # internal id to text
+        return self.user_text[id]
+        
+    def user_token2text(self, token: str) -> str:
+        internal_id = self.token2id('user_id', token)
+        return self.user_id2text(internal_id)
+    
+    def item_id2text(self, id: int) -> str:
         # internal id to text
         return self.item_text[id]
         
-    def token2text(self, token: str) -> str:
+    def item_token2text(self, token: str) -> str:
         internal_id = self.token2id('item_id', token)
-        return self.id2text(internal_id)
+        return self.item_id2text(internal_id)
