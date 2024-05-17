@@ -1,30 +1,6 @@
 import typing as tp
 from abc import ABCMeta
 from langchain.tools import BaseTool
-from langchain_core.messages import BaseMessage
-from langchain_core.pydantic_v1 import BaseModel, Field
-
-
-
-class FinalResponse(BaseModel):
-    """The final response/answer."""
-
-    response: str
-
-
-class Replan(BaseModel):
-    feedback: str = Field(
-        description="Analysis of the previous attempts and recommendations on what needs to be fixed."
-    )
-
-
-class ReflexionOutputs(BaseModel):
-    """Decide whether to replan or whether you can return the final response."""
-
-    thought: str = Field(
-        description="The chain of thought reasoning for the selected action"
-    )
-    action: tp.Union[FinalResponse, Replan]
 
 
 class AgentBase(metaclass=ABCMeta):
@@ -74,7 +50,7 @@ class AgentBase(metaclass=ABCMeta):
         self.prompt_for_agent_reflexion = prompt_for_agent_reflection or self.default_prompt_for_agent_reflexion
         
         self.llm_executor = llm_executor
-        # self.agent_executor = self._create_agent_executor(*args, **kwargs)
+        self.agent_executor = self._create_agent_executor(*args, **kwargs)
 
         if reflection and llm_for_reflection:
             self.llm_for_reflection = llm_for_reflection
@@ -91,8 +67,6 @@ class AgentBase(metaclass=ABCMeta):
             self.llm_for_planning = None
             self.agent_planning = None
 
-        
-        self.messages: tp.List[BaseMessage] = []
 
     def _create_agent_executor(self, *args: tp.Any, **kwargs: tp.Any) -> None:
         raise NotImplementedError
