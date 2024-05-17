@@ -24,6 +24,8 @@ class SimpleAgent(AgentBase):
                         verbose = True
                         )
         
+
+    def _create_agent_executor(self):
         self.prompt_for_agent_executor = ChatPromptTemplate.from_messages(
                     [
                         (
@@ -39,9 +41,6 @@ class SimpleAgent(AgentBase):
                     tool_description_with_args="\n".join([f"name: {t.name}\ndescription: {t.description}\nargs: {t.args}" for t in self.tools]),
                     )
         
-        self.agent_executor = self._create_agent_executor()
-
-    def _create_agent_executor(self):
         agent = create_tool_calling_agent(self.llm_executor, self.tools, self.prompt_for_agent_executor)
         agent_executor = AgentExecutor(
                                 agent=agent,
