@@ -85,4 +85,4 @@ class PlanExecuteAgent(SimpleAgent):
 
         agent_response = self.agent_executor.invoke({"input": prompt_for_user + "\nYou should follow the generated plan. Plan:" + '\n'.join([f"{index+1}: {item}" for index, item in enumerate(state["plan"])])})       
 
-        return agent_response, state
+        return agent_response
