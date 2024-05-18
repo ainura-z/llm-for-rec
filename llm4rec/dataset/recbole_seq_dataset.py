@@ -32,7 +32,7 @@ class RecboleSeqDataset(SequentialDataset):
         self.user_id_token = self.field2id_token["user_id"]
         self.preprocess_text_fn = preprocess_text_fn
         self.user_text = self.load_user_text()
-        self.item_text = self.load_item_text()
+        self.item_attr = self.load_item_text()
 
     def load_user_text(self) -> tp.List[str]:
         # from internal ids to text
@@ -75,9 +75,12 @@ class RecboleSeqDataset(SequentialDataset):
 
     def load_item_text(self) -> tp.List[str]:
         # from internal ids to text
-        token_text = {}
+        token_attr = {}
         item_text = np.full(len(self.item_id_token), "", dtype=object)
         item_text[0] = "[PAD]"
+        item_attr = {}
+        item_attr[0] = {}
+        
         item_file_path = osp.join(self.data_path, f"{self.dataset_name}.item")
 
         # token id to text mapping
@@ -93,18 +96,19 @@ class RecboleSeqDataset(SequentialDataset):
             for line in file:
                 description = line.strip().split("\t")
                 item_id = description[0]
-                text = "; ".join([f'{col_names[col_idx]}: {description[col_idx]}' for col_idx in text_col_idx])
-                token_text[item_id] = text
+                attributes = {col_names[col_idx]: description[col_idx] for col_idx in text_col_idx}
+                #"; ".join([f'{col_names[col_idx]}: {description[col_idx]}' for col_idx in text_col_idx])
+                token_attr[item_id] = attributes
 
         # internal id to text mapping
         for i, token in enumerate(self.item_id_token):
             if token == "[PAD]":
                 continue
-            raw_text = token_text[token]
-            if self.preprocess_text_fn:
-                raw_text = self.preprocess_text_fn(raw_text)
-            item_text[i] = raw_text
-        return item_text
+            raw_attr = token_attr[token]
+            #if self.preprocess_text_fn:
+            #    raw_text = self.preprocess_text_fn(raw_text)
+            item_attr[i] = raw_attr
+        return item_attr
     
     def user_id2text(self, id: int) -> str:
         # internal id to text
@@ -116,8 +120,16 @@ class RecboleSeqDataset(SequentialDataset):
     
     def item_id2text(self, id: int) -> str:
         # internal id to text
-        return self.item_text[id]
+        attr = self.item_attr[id]
+        text = "; ".join([f'{attr_key}:{attr[attr_key]}' for attr_key in attr])
+
+        return text#self.item_text[id]
         
     def item_token2text(self, token: str) -> str:
         internal_id = self.token2id('item_id', token)
         return self.item_id2text(internal_id)
+        
+    def item_token2attr(self, token: str) -> str:
+        internal_id = self.token2id('item_id', token)
+        return self.item_attr[internal_id]
+    

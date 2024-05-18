@@ -9,7 +9,7 @@ import os
 import typing as tp
 
 from llm4rec.tasks.base_recommender import Recommender
-
+from llm4rec.memory.base_memory import BaseMemory
 
 class RetrievalRecommender(Recommender):
     """
@@ -31,8 +31,9 @@ class RetrievalRecommender(Recommender):
         self,
         items_info_path: str,
         embeddings: Embeddings = None,
-        csv_loader_args: tp.Dict[tp.Any, tp.Any] = dict(csv_args=None, 
-        source_column='item_id'),
+        item_memory: BaseMemory = None,
+        load_from_file: bool = False,
+        csv_loader_args: tp.Dict[tp.Any, tp.Any] = dict(csv_args=None, source_column='item_id'),
         text_splitter_args: tp.Dict[str, tp.Any] = dict(
             chunk_size=1000, chunk_overlap=0
         ),
@@ -56,15 +57,18 @@ class RetrievalRecommender(Recommender):
             query (str, optional): Custom query for the retrieval. Defaults to None.
 
         """
-        if not os.path.isfile(items_info_path):
-            raise FileNotFoundError("CSV file not found.")
-        self.loader = CSVLoader(
-            file_path=items_info_path, **csv_loader_args
-        )
-        documents = self.loader.load()
-        self.text_splitter = CharacterTextSplitter(**text_splitter_args)
-        docs = self.text_splitter.split_documents(documents)
 
+        self.item_memory = item_memory
+        self.text_splitter = CharacterTextSplitter(**text_splitter_args)
+
+        if load_from_file:
+            if not os.path.isfile(items_info_path):
+                raise FileNotFoundError("CSV file not found.")
+            docs = self._load_from_file(items_info_path, csv_loader_args)
+        else:
+            assert type(self.item_memory) != type(None)
+            docs = self._load_from_memory()
+            
         if not embeddings:
             embeddings = HuggingFaceEmbeddings(
                 model_name=emb_model_name, model_kwargs=emb_model_kwargs
@@ -76,6 +80,21 @@ class RetrievalRecommender(Recommender):
             search_type=search_type, search_kwargs=search_kwargs.copy()
         )
         self.query = query if query else self.base_query
+
+    def _load_from_memory(self) -> tp.List[Document]:
+        documents = self.text_splitter.create_documents(
+            texts=list(self.item_memory.get_memory.values()),
+            metadatas=list({'source': _id} for _id in self.item_memory.get_memory.keys())
+        )
+        return documents
+
+    def _load_from_file(self, items_info_path, csv_loader_args) -> tp.List[Document]:
+        self.loader = CSVLoader(
+            file_path=items_info_path, **csv_loader_args
+        )
+        documents = self.loader.load()
+        docs = self.text_splitter.split_documents(documents)
+        return docs
 
     def _prepare_prev_interactions(self, prev_interactions: tp.List[str]) -> str:
         prev_interactions = " ".join(

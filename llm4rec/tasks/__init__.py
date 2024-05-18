@@ -1,17 +1,16 @@
 from llm4rec.tasks.information_retrieval.general_retriever import (
     RetrievalRecommender,
 )
-from llm4rec.tasks.information_retrieval.recbole_retriever import RecBoleRetrievalRecommender
-from llm4rec.tasks.ranker.openai_ranker import OpenAIRanker
-
+from llm4rec.tasks.augmentation.item_augmentation import ItemAugmentation
+from llm4rec.tasks.augmentation.user_augmentation import UserAugmentation
 from llm4rec.tasks.ranker.general_ranker import RankerRecommender
 
 from llm4rec.tasks.explanation.explanation import ExplainableRecommender
 
 __all__ = [
+    "ItemAugmentation",
+    "UserAugmentation",
     "RetrievalRecommender",
-    "RecBoleRetrievalRecommender",
-    "OpenAIRanker",
     "RankerRecommender",
     "ExplainableRecommender"
 ]

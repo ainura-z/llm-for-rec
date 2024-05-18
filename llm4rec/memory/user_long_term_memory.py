@@ -34,5 +34,8 @@ class UserLongTermMemory(BaseMemory):
 
 
     def retrieve(self, id, query):
-        docs = self.retrievers[id].invoke(query)
-        return  "\n".join([doc.page_content for doc in docs])
+        try:
+            docs = self.retrievers[id].invoke(query)
+            return  "\n".join([doc.page_content for doc in docs])
+        except KeyError:
+            return ""

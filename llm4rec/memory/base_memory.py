@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
+import typing as tp
 
 class BaseMemory(ABC):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.memory_store = {}
 
     @abstractmethod
@@ -20,3 +21,13 @@ class BaseMemory(ABC):
 
     def __getitem__(self, idx):
         return self.memory_store[idx]
+        
+    @property
+    def get_memory(self) -> tp.Dict[tp.Any, tp.Any]:
+        """
+        Return memory.
+
+        Returns:
+            tp.Dict[tp.Any, tp.Any]: The memory.
+        """
+        return self.memory_store
