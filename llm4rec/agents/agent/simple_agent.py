@@ -10,20 +10,36 @@ class SimpleAgent(AgentBase):
     def __init__(
             self,
             tools: tp.Sequence[BaseTool],
-            llm_executor: tp.Optional[tp.Any],
+            llm_executor: tp.Optional[tp.Any] = None,
+            llm_for_planning: tp.Optional[tp.Any] = None,
+            llm_for_reflection: tp.Optional[tp.Any] = None,
             prompt_for_agent_executor: tp.Optional[str] = None,
-            max_iter_steps: int = 3,
-            verbose: bool = True,
+            prompt_for_agent_planning: tp.Optional[str] = None,
+            prompt_for_agent_replanning: tp.Optional[str] = None,
+            prompt_for_agent_reflection: tp.Optional[str] = None,
+            planning: bool = False,
+            reflection: bool = False,
+            max_iter_steps = 3,
+            verbose = True
             ):
         
         super().__init__(
                         tools=tools,
                         llm_executor=llm_executor,
                         prompt_for_agent_executor=prompt_for_agent_executor,
-                        max_iter_steps = 3,
-                        verbose = True
+                        llm_for_planning=llm_for_planning,
+                        llm_for_reflection=llm_for_reflection,
+                        prompt_for_agent_planning=prompt_for_agent_planning,
+                        prompt_for_agent_replanning=prompt_for_agent_replanning,
+                        prompt_for_agent_reflection=prompt_for_agent_reflection,
+                        planning=planning,
+                        reflection=reflection,
+                        max_iter_steps = max_iter_steps,
+                        verbose = verbose
                         )
         
+
+    def _create_agent_executor(self):
         self.prompt_for_agent_executor = ChatPromptTemplate.from_messages(
                     [
                         (
@@ -39,9 +55,6 @@ class SimpleAgent(AgentBase):
                     tool_description_with_args="\n".join([f"name: {t.name}\ndescription: {t.description}\nargs: {t.args}" for t in self.tools]),
                     )
         
-        self.agent_executor = self._create_agent_executor()
-
-    def _create_agent_executor(self):
         agent = create_tool_calling_agent(self.llm_executor, self.tools, self.prompt_for_agent_executor)
         agent_executor = AgentExecutor(
                                 agent=agent,

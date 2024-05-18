@@ -1,4 +1,5 @@
 from langchain import PromptTemplate
+from langchain.schema import AIMessage
 from llm4rec.tasks.base_recommender import Recommender
 import typing as tp
 import re
@@ -121,5 +122,9 @@ class RankerRecommender(Recommender):
                                     last_item=last_item)
         
         result = self.llm.invoke(prompt)
+
+        if isinstance(result, AIMessage):
+            result = result.content
+            
         ranked_items = self._parse(result, candidates)
         return ranked_items
