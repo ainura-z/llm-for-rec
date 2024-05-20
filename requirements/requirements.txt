@@ -1,4 +1,6 @@
-langchain  
+langchain
+langchain-community
+langchain-core
 langchain-openai 
 faiss-cpu
 faiss-gpu
@@ -9,3 +11,4 @@ kmeans_pytorch
 recbole
 sentence-transformers
 python-dotenv
+wikipedia

@@ -16,16 +16,26 @@ class Pipeline(PipelineBase):
 
     def run(self, *args: tp.Any, **inputs: tp.Any):
         for i, task in enumerate(self.tasks):
-            num_args = task.recommend.__code__.co_argcount
-            arg_names = task.recommend.__code__.co_varnames#[1:num_args]
-            task_inputs = {arg: inputs[arg] for arg in arg_names if arg in inputs}
-            outputs = task.recommend(**task_inputs)
+            if "transform" in dir(task): 
+                run_method = task.transform
+            else:
+                run_method = task.recommend
             
+            num_args = run_method.__code__.co_argcount
+            arg_names = run_method.__code__.co_varnames#[1:num_args]
+            
+            task_inputs = {arg: inputs[arg] for arg in arg_names if arg in inputs}
+            outputs = run_method(**task_inputs)
+                
             if self.verbose:
                 print(f"Task {i+1} outputs: ", outputs)
 
-            candidate_texts = self.token2text(outputs)
-            outputs = dict(zip(outputs, candidate_texts))
-            inputs['candidates'] = outputs
-            
+            if "transform" in dir(task):
+                # assume that first argument in inputs is the same var name as in outputs
+                inputs[list(task_inputs.keys())[0]] = outputs
+            else:
+                candidate_texts = [self.token2text(output) for output in outputs]
+                outputs = dict(zip(outputs, candidate_texts))
+                inputs['candidates'] = outputs
+                    
         return list(outputs.keys())

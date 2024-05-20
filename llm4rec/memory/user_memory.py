@@ -1,15 +1,19 @@
-import typing as tp
 from llm4rec.memory.user_long_term_memory import UserLongTermMemory
 from llm4rec.memory.user_short_term_memory import UserShortTermMemory
-
+import numpy as np
+import typing as tp
+import os
 
 class UserMemory:
     def __init__(self, user_attributes: tp.Callable, 
                  short_term_limit,
                  llm, embeddings, emb_size, 
                  item_memory, 
+                 train_dataset,
+                 min_rating=1, max_rating=5,
                  num_to_retrieve=3, 
-                 update_long_term_every=None):
+                 update_long_term_every=None,
+                 load_filename=None):
         # global memory
         self.user_attributes = user_attributes
 
@@ -20,6 +24,30 @@ class UserMemory:
         self.update_long_term_every = update_long_term_every if update_long_term_every else short_term_limit
 
         self.llm = llm
+        
+        if load_filename:
+            self.load(load_filename)
+            
+        self._construct_memory(train_dataset, min_rating, max_rating)
+        
+    def _construct_memory(self, train_dataset, min_rating=1, max_rating=5):
+        history_item_matrix = train_dataset.history_item_matrix()
+        inter_matrix =  train_dataset.inter_matrix('csr', value_field='rating')
+        user_id_mapping = lambda user_ids:  train_dataset.id2token('user_id', user_ids)
+        item_id_mapping =  lambda item_ids:  train_dataset.id2token('item_id', item_ids)
+        history_matrix, _, history_lens = history_item_matrix
+    
+        for user_id in [102]:#range(1, len(history_matrix)):
+            if user_id not in self.short_term_memory.memory_store:
+                user_history = history_matrix[user_id][:history_lens[user_id]].tolist()
+                ratings = inter_matrix[user_id, :].toarray() * (max_rating-min_rating) + min_rating
+                ratings = ratings.astype('int')[0]
+    
+                user_id_token = user_id_mapping(user_id)
+                item_id_tokens = item_id_mapping(user_history)
+    
+                for item, rating in zip(item_id_tokens, ratings):
+                    self.update(user_id_token, {'rating':int(rating), 'item_id':str(item)})
 
     def update(self, id, data):
         self.short_term_memory.update(id, data)
@@ -61,3 +89,14 @@ class UserMemory:
         profile += f"User long-term preferences: {long_term_pref}."
 
         return profile
+        
+    def save(self, folder_path):
+        self.short_term_memory.save(folder_path+'/short_term_mem.json')
+        self.long_term_memory.save(folder_path+'/long_term_mem.json')
+        
+    def load(self, folder_path):
+        assert os.path.exists(folder_path+'/short_term_mem.json')
+        assert os.path.exists(folder_path+'/long_term_mem.json')
+        
+        self.short_term_memory.load(folder_path+'/short_term_mem.json')
+        self.long_term_memory.load(folder_path+'/long_term_mem.json')

@@ -2,7 +2,6 @@ from llm4rec.memory.base_memory import BaseMemory
 from langchain_core.documents import Document
 from langchain.chains.summarize import load_summarize_chain
 from tqdm import tqdm
-import json
 
 
 class ItemMemory(BaseMemory):
@@ -21,7 +20,7 @@ class ItemMemory(BaseMemory):
         self._construct_memory(item_ids)
 
     def _construct_memory(self, item_ids):
-        for item_id in tqdm(item_ids[500:600]):
+        for item_id in tqdm(item_ids[:800]):
             if item_id not in self.memory_store:
                 item_attr = self.dataset_info_map(item_id)
                 text_data = self.title_col + ": " + item_attr[self.title_col]
@@ -51,13 +50,3 @@ class ItemMemory(BaseMemory):
 
     def retrieve(self, id):
         return self.memory_store.get(id, "")
-
-    def save(self, filename):
-        assert filename.split('.')[-1] == 'json'
-
-        with open(filename, 'w') as f:
-            json.dump(self.memory_store, f)
-
-    def load(self, filename):
-        with open(filename) as f:
-            self.memory_store = json.load(f)

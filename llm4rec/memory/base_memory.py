@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import typing as tp
+import json
 
 class BaseMemory(ABC):
     def __init__(self, *args, **kwargs):
@@ -31,3 +32,13 @@ class BaseMemory(ABC):
             tp.Dict[tp.Any, tp.Any]: The memory.
         """
         return self.memory_store
+        
+    def save(self, filename):
+        assert filename.split('.')[-1] == 'json'
+        
+        with open(filename, 'w') as f:
+            json.dump(self.memory_store, f)
+
+    def load(self, filename):
+        with open(filename) as f:
+            self.memory_store = json.load(f)
