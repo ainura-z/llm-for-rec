@@ -18,9 +18,9 @@ class ItemListInput(BaseModel):
 
 def get_info_dict_from_dataset(dataset, item_id_list, only_title=False) -> tp.Dict[str, str]:
     if only_title:
-        texts = [text.split(';')[0] for text in dataset.item_token2text(item_id_list)]
+        texts = [text.split(';')[0] for text in [dataset.item_token2text(id) for id in item_id_list]]
     else:
-        texts = dataset.item_token2text(item_id_list)
+        texts = [dataset.item_token2text(id) for id in item_id_list]
     
     return {item_id_list[i]:texts[i] for i in range(len(item_id_list))}
 
