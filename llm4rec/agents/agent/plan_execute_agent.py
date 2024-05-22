@@ -3,6 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import AIMessage
 from langchain.tools import BaseTool
 from llm4rec.utils import prepare_input_per_users
+from llm4rec.agents import SimpleAgent
 import typing as tp
 import json
 import re
@@ -83,4 +84,4 @@ class PlanExecuteAgent(SimpleAgent):
         agent_response = self.agent_executor.invoke({"input": prompt_for_user\
                                                       + "\nYou should follow the generated plan. Plan:" + '\n'.join([f"{index+1}: {item}" for index, item in enumerate(plan)])})       
 
-        return agent_response, plan
+        return agent_response
