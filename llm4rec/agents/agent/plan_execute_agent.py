@@ -1,6 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.schema import AIMessage
+from langchain.tools import BaseTool
 from llm4rec.utils import prepare_input_per_users
 import typing as tp
 import json
