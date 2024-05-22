@@ -3,8 +3,8 @@ from llm4rec.prompts.tools import OVERALL_TOOL_DESC, RULES
 
 PROMPT_FOR_USER= \
 """
-"Task: User {user_profile}. This User has previous interactions with these items: {item_ids_with_meta}. 
-Please give {top_k} candidate items recommendations for this user considering his preferences."
+Task: User {user_profile}. This User has previous interactions with these items: {item_ids_with_meta}. 
+Please give {top_k} candidate items recommendations for this user considering his preferences.
 """
 
 
@@ -12,9 +12,14 @@ EXECUTOR_PROMPT = \
 """
 You are very powerful assistant for recommedation system, which uses information based on historical user data.
 You have access to the following tools: 
-{tools_description_with_args}
-Use tools to provide the best recommendations for the user.
-"""
+{tools_description}
+
+Tools have the following parameters:
+{{tools_description_with_args}}
+
+Please CALL the tools to provide the best recommendations for the user.
+The final output can be ONLY a list of recommended items.
+""".format(tools_description=OVERALL_TOOL_DESC)
 
 
 PLANNER_PROMPT = \
