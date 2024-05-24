@@ -52,7 +52,7 @@ class SimpleAgent(AgentBase):
             )
 
         self.prompt_for_agent_executor = self.prompt_for_agent_executor.partial(
-                    tool_description_with_args="\n".join([f"name: {t.name}\ndescription: {t.description}\nargs: {t.args}" for t in self.tools]),
+                    tools_description_with_args="\n".join([f"name: {t.name}\ndescription: {t.description}\nargs: {t.args}" for t in self.tools]),
                     )
         
         agent = create_tool_calling_agent(self.llm_executor, self.tools, self.prompt_for_agent_executor)

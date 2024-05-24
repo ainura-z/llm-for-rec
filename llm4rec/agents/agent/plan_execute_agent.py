@@ -41,12 +41,21 @@ class PlanExecuteAgent(SimpleAgent):
                         verbose=verbose
                         )
         
+    def _parse_agent_planning(self, agent_output: AIMessage) -> tp.List[str]:
+        plan_cleaned = re.sub(r'\\', '', agent_output.content, flags=re.DOTALL)
+        start_index = plan_cleaned.find('{')
+        end_index = plan_cleaned.find('}')
+        
+        plan = json.loads(fr"{plan_cleaned[start_index:end_index+1]}")
 
+        return plan["steps"]
+    
     def _create_agent_planner(self) -> None:
         self.prompt_for_agent_planning = ChatPromptTemplate.from_template(self.prompt_for_agent_planning)
-        planner = self.prompt_for_agent_planning | self.llm_for_planning
+        planner = self.prompt_for_agent_planning | self.llm_for_planning | self._parse_agent_planning
         return planner
-
+    
+    
     def _create_agent_reflection(self) -> None:
         self.prompt_for_agent_replanning = ChatPromptTemplate.from_template(self.prompt_for_agent_replanning)
         reflection = self.prompt_for_agent_replanning | self.llm_for_reflection
@@ -61,28 +70,18 @@ class PlanExecuteAgent(SimpleAgent):
         
         prompt_for_user = prepare_input_per_users(self.default_prompt_for_user, user_profile, prev_interactions, top_k)
         
-        tools_description = "\n".join([f"name: {t.name}\ndescription: {t.description}" for t in self.tools])
-        
-        state = {'input': "Based on user previous interactions, give candidate items recommendations for this user considering his preferences", 
-                'plan':[]}
         
         reflection_response = AIMessage(content="")
         flag = False
         while not flag:
-            plan = self.agent_planning.invoke({"tools_description": tools_description, "objective": state["input"] + f"\nFeedback from the reflection agent: {reflection_response.content}"})
-            plan_cleaned = re.sub(r'\\', '', plan.content, flags=re.DOTALL)
-            start_index = plan_cleaned.find('{')
-            end_index = plan_cleaned.find('}')
-            
-            json_object = json.loads(fr"{plan_cleaned[start_index:end_index+1]}")
+            plan = self.agent_planning.invoke({"objective": prompt_for_user + f"\nFeedback from the reflection agent: {reflection_response.content}"})
 
-            state["plan"] = json_object["steps"]
-
-            reflection_response = self.agent_reflection.invoke({"tools_description":tools_description, "plan": state["plan"]})
+            reflection_response = self.agent_reflection.invoke({"plan": plan})
             if reflection_response.content[:3] == "Yes":
                 flag = True
                 break
 
-        agent_response = self.agent_executor.invoke({"input": prompt_for_user + "\nYou should follow the generated plan. Plan:" + '\n'.join([f"{index+1}: {item}" for index, item in enumerate(state["plan"])])})       
+        agent_response = self.agent_executor.invoke({"input": prompt_for_user\
+                                                      + "\nYou should follow the generated plan. Plan:" + '\n'.join([f"{index+1}: {item}" for index, item in enumerate(plan)])})       
 
         return agent_response

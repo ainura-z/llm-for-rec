@@ -1,6 +1,7 @@
-import typing as tp
 from abc import ABCMeta
 from langchain.tools import BaseTool
+from llm4rec.prompts import PROMPT_FOR_USER, EXECUTOR_PROMPT, PLANNER_PROMPT, REPLANNER_PROMPT
+import typing as tp
 
 
 class AgentBase(metaclass=ABCMeta):
@@ -10,45 +11,13 @@ class AgentBase(metaclass=ABCMeta):
     Warning: This class should not be used directly.
     Use derived classes instead.
     """
-    default_prompt_for_agent_planning: str = """
-                                                For the given objective, come up with a simple step by step plan.
-                                                Here are the tools could be used: 
-                                                retrieval_recommender: tool for finding similar candidate items based on previous interactions of the user
-                                                item_dataset_pair_info: tool for mapping id of the item to its attributes, used before Ranker
-                                                ranker_recommender: tool for ranking candidates items
+    default_prompt_for_agent_planning: str = PLANNER_PROMPT
 
-                                                First you need to think whether to use tools. If no, give the answer.
-
-                                                Objective: {objective}
-                                                Plan should be in the following form:
-                                                {{
-                                                    "steps": tp.List[str] = Field(description="different steps to follow, should be in sorted order")
-                                                }}
-                                                Just give the Plan WITHOUT calling the functions.
-                                            """
-
-    default_prompt_for_agent_replanning: str = """
-                                                There is a recommendation agent.
-                                                The agent could use several tools to deal with the objective. Here are the description of those tools: {tools_description}
-                                                When giving judgement, you should consider whether the tool using is reasonable? 
-                                                For example, ranker tool cannot be used before retrieval tool. And as retrieval tool returns only ids, item_dataset_pair_info should be used before ranker tool.
-                                                But the agent could use only retrieval tool, which is also fine.
-
-                                                If the plan is reasonable, you should ONLY output "Yes". 
-                                                If the plan is not reasonable, you should give "No. The response is not good because ...".
-
-                                                The plan is the following: {plan}
-                                            """
+    default_prompt_for_agent_replanning: str = REPLANNER_PROMPT
     default_prompt_for_agent_reflection: str = None # TODO
-    default_prompt_for_agent_executor: str = """
-                                                You are very powerful assistant for recommedation system, which uses information based on historical user data.
-                                                You have access to the following tools: {tool_description_with_args}.
-                                                Please use the tools to provide the best recommendations for the user.       
-                                            """
+    default_prompt_for_agent_executor: str = EXECUTOR_PROMPT
     
-    default_prompt_for_user: str = (
-        "Task: User {user_profile}. This User has previous interactions with these items: {item_ids_with_meta}. Please give {top_k} candidate items recommendations for this user considering his preferences."
-    )
+    default_prompt_for_user: str = PROMPT_FOR_USER
 
 
     def __init__(
