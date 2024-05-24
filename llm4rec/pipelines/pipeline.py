@@ -1,6 +1,5 @@
 from llm4rec.pipelines.base_pipeline import PipelineBase
-from llm4rec.tasks import RetrievalRecommender
-from llm4rec.tasks import RankerRecommender
+from llm4rec.tasks import RetrievalRecommender, RankerRecommender, UserAugmentation
 import typing as tp
 
 class Pipeline(PipelineBase):
@@ -31,8 +30,11 @@ class Pipeline(PipelineBase):
                 print(f"Task {i+1} outputs: ", outputs)
 
             if "transform" in dir(task):
+                if isinstance(task, UserAugmentation):
+                    inputs['user_profile'] = outputs
                 # assume that first argument in inputs is the same var name as in outputs
-                inputs[list(task_inputs.keys())[0]] = outputs
+                else:
+                    inputs[list(task_inputs.keys())[0]] = outputs
             else:
                 candidate_texts = [self.token2text(output) for output in outputs]
                 outputs = dict(zip(outputs, candidate_texts))

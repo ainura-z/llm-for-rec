@@ -6,6 +6,6 @@ class UserAugmentation:
         super().__init__()
         self.memory = user_memory
 
-    def transform(self, user_profile: str):
-        user_profile = self.memory.construct_user_profile(user_profile)
+    def transform(self, user_token_id: str):
+        user_profile = self.memory.construct_user_profile(user_token_id)
         return user_profile

@@ -13,14 +13,21 @@ class UserShortTermMemory(BaseMemory):
         self.llm = llm
         self.reflect_prompt = reflect_template if reflect_template else self.profile_prompt_template
         self.item_memory = item_memory
+        self.update_counts = {}
 
     def update(self, id, data):
         if id not in self.memory_store:
             self.memory_store[id] = []
+            self.update_counts[id] = 0
+            
         elif len(self.memory_store[id]) >= self.memory_limit:
             self.memory_store[id].pop(0)
 
         self.memory_store[id].append(data)
+        self.update_counts[id] += 1
+        
+    def get_update_counts(self, id):
+        return self.update_counts.get(id, 0)
 
     def reflect(self, id):
         user_memory = self.retrieve(id)

@@ -37,7 +37,7 @@ class UserMemory:
         item_id_mapping =  lambda item_ids:  train_dataset.id2token('item_id', item_ids)
         history_matrix, _, history_lens = history_item_matrix
     
-        for user_id in [102]:#range(1, len(history_matrix)):
+        for user_id in range(1, len(history_matrix)):
             if user_id not in self.short_term_memory.memory_store:
                 user_history = history_matrix[user_id][:history_lens[user_id]].tolist()
                 ratings = inter_matrix[user_id, :].toarray() * (max_rating-min_rating) + min_rating
@@ -53,7 +53,7 @@ class UserMemory:
         self.short_term_memory.update(id, data)
         update_counts = len(self.short_term_memory[id])
 
-        if update_counts % self.update_long_term_every == 0:
+        if self.short_term_memory.get_update_counts(id) % self.update_long_term_every == 0:
             self.long_term_memory.update(id, self.short_term_memory.reflect(id))
 
     def retrieve(self, id, query, memory_type='all'):
