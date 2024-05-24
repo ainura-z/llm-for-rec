@@ -32,7 +32,7 @@ class RetrievalRecommender(Recommender):
         items_info_path: str,
         embeddings: Embeddings = None,
         item_memory: BaseMemory = None,
-        load_from_file: bool = False,
+        load_from_file: bool = True,
         csv_loader_args: tp.Dict[tp.Any, tp.Any] = dict(csv_args=None, source_column='item_id'),
         text_splitter_args: tp.Dict[str, tp.Any] = dict(
             chunk_size=1000, chunk_overlap=0

@@ -92,12 +92,14 @@ class RecboleSeqDataset(SequentialDataset):
                 text_col_idx = [col_names.index(self.config["text_col"])]
             else:
                 text_col_idx = [col_names.index(col_name) for col_name in self.config["text_col"]]
-
+            
             for line in file:
                 description = line.strip().split("\t")
                 item_id = description[0]
                 attributes = {col_names[col_idx]: description[col_idx] for col_idx in text_col_idx}
                 #"; ".join([f'{col_names[col_idx]}: {description[col_idx]}' for col_idx in text_col_idx])
+                if self.preprocess_text_fn:
+                    attributes[self.config['title_col']] = self.preprocess_text_fn(attributes[self.config['title_col']])
                 token_attr[item_id] = attributes
 
         # internal id to text mapping
@@ -105,8 +107,6 @@ class RecboleSeqDataset(SequentialDataset):
             if token == "[PAD]":
                 continue
             raw_attr = token_attr[token]
-            #if self.preprocess_text_fn:
-            #    raw_text = self.preprocess_text_fn(raw_text)
             item_attr[i] = raw_attr
         return item_attr
     
@@ -122,7 +122,6 @@ class RecboleSeqDataset(SequentialDataset):
         # internal id to text
         attr = self.item_attr[id]
         text = "; ".join([f'{attr_key}:{attr[attr_key]}' for attr_key in attr])
-
         return text#self.item_text[id]
         
     def item_token2text(self, token: str) -> str:
