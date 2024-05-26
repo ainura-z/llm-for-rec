@@ -146,7 +146,7 @@ class RankerRecommender(Recommender):
             last_item=last_item,
         )
 
-        result = llm.invoke(prompt)
+        result = self.llm.invoke(prompt)
 
         ranked_items = self._parse(result, candidates)
 

@@ -23,7 +23,14 @@ class Pipeline(PipelineBase):
             num_args = run_method.__code__.co_argcount
             arg_names = run_method.__code__.co_varnames#[1:num_args]
             
+            # костыль для того чтобы после classic recsys добавлялись тексты к prev_interactions
+            if isinstance(task, RankerRecommender) or isinstance(task, RankerRecommender):
+                if 'prev_interactions' in inputs and type(inputs['prev_interactions']) != type({}):
+                    prev_int_texts = [self.token2text(id) for id in inputs['prev_interactions']]
+                    inputs['prev_interactions'] = dict(zip(inputs['prev_interactions'], prev_int_texts))
+            
             task_inputs = {arg: inputs[arg] for arg in arg_names if arg in inputs}
+
             outputs = run_method(**task_inputs)
                 
             if self.verbose:

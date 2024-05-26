@@ -4,6 +4,7 @@ from langchain.chains.summarize import load_summarize_chain
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.language_models.llms import BaseLLM
 from tqdm import tqdm
+import typing as tp
 
 
 class ItemMemory(BaseMemory):
