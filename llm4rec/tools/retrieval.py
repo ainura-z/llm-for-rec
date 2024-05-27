@@ -9,8 +9,8 @@ class RetrievalBaseInput(BaseModel):
     """Input for tool"""
     
     user_profile: str = Field(description='User profile description')
-    prev_interactions: tp.Dict[str, str] = Field(
-        description="Previous interactions of the user"
+    prev_interactions: tp.List[str] = Field(
+        description="Item ids of previous interactions of the user"
     )
     top_k: int = Field(description='Number of items to retrieve')
 

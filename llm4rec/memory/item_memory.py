@@ -17,7 +17,7 @@ class ItemMemory(BaseMemory):
         item_ids: tp.List[int],
         dataset_info_map: tp.Callable,
         title_col: str,
-        summary_llm: tp.Union[BaseLLM, BaseChatModel],
+        summary_llm: tp.Union[BaseLLM, BaseChatModel] = None,
         augmentation_loader: tp.Callable = None,
         load_filename: str = None,
         *args,
@@ -40,8 +40,9 @@ class ItemMemory(BaseMemory):
             self.summary_chain = load_summarize_chain(
                 self.summary_llm, chain_type="stuff"
             )
-        self.dataset_info_map = dataset_info_map
+        self.dataset_info_map = lambda item_id: "; ".join([f"{key}: {dataset_info_map(item_id)[key]}" for key in dataset_info_map(item_id)])
         self.title_col = title_col
+        self.title_map = lambda item_id: dataset_info_map(item_id)[self.title_col]
         self.augmentation_loader = augmentation_loader
         if load_filename:
             self.load(load_filename)
@@ -54,9 +55,9 @@ class ItemMemory(BaseMemory):
         """
         for item_id in tqdm(item_ids):
             if item_id not in self.memory_store:
-                item_attr = self.dataset_info_map(item_id)
-                text_data = self.title_col + ": " + item_attr[self.title_col]
-                text_attr = "; ".join([f"{key}: {item_attr[key]}" for key in item_attr])
+                #item_attr = self.dataset_info_map(item_id)
+                text_data = self.title_col + ": " + self.title_map(item_id)
+                text_attr = self.dataset_info_map(item_id)#"; ".join([f"{key}: {item_attr[key]}" for key in item_attr])
 
                 if self.augmentation_loader:
                     docs = self.augmentation_loader(query=text_data).load()
@@ -80,5 +81,10 @@ class ItemMemory(BaseMemory):
     def __getitem__(self, id) -> str:
         return self.memory_store.get(id, "")
 
-    def retrieve(self, id) -> str:
-        return self.memory_store.get(id, "")
+    def retrieve(self, id, retr_type="dataset_info") -> str:
+        if retr_type=='title':
+            return self.title_map(id)
+        elif retr_type == "dataset_info":
+            return self.dataset_info_map(id)
+        else:
+            return self.memory_store.get(id, "")

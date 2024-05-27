@@ -7,11 +7,11 @@ from llm4rec.tasks.base_recommender import Recommender
 
 class RankerInput(BaseModel):
     """Input for ranker tool"""
-    prev_interactions: tp.Dict[str, str] = Field(
-        description="previous interactions for model"
+    prev_interactions: tp.List[str] = Field(
+        description="Item ids of previous interactions"
     )
-    candidates: tp.Dict[str, str] = Field(
-        description="candidate items for recommendation from previous step"
+    candidates: tp.List[str] = Field(
+        description="Item ids of candidate items for recommendation from previous step"
     )
 
 

@@ -1,7 +1,8 @@
 langchain
 langchain-community
 langchain-core
-langchain-openai 
+langchain-openai
+langchain_groq
 faiss-cpu
 faiss-gpu
 python-dotenv

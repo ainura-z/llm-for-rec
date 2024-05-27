@@ -23,9 +23,9 @@ class RankerRecommender(Recommender):
             + "Now there are {num_candidates} candidate items that I may be interested in:\n{candidates}.\n"
             + "Please rank these {num_candidates} items by measuring the possibilities that "
             + "I would like to interact with next most, according to my interest history. Please think step by step.\n"
-            + "Please show me your ranking results with order numbers. "
+            + "Please show me your ranking results with item titles and order numbers. "
             + "Split your output with line break. You MUST rank the given candidate items. "
-            + "You can not generate items that are not in the given candidate list.",
+            + "You can not generate items that are not in the given candidate list. You MUST NOT include items the user has already interacted with.",
             input_variables=["prev_interactions", "num_candidates", "candidates"],
         ),
         "recency": PromptTemplate(
@@ -66,6 +66,7 @@ class RankerRecommender(Recommender):
     def __init__(
         self,
         llm: tp.Union[BaseChatModel, BaseLLM],
+        item2text: tp.Callable,
         custom_prompt: str = None,
         type_prompt: str = "sequential",
     ) -> None:
@@ -86,9 +87,10 @@ class RankerRecommender(Recommender):
                 )
             self.prompt = self.default_prompts[type_prompt]
         self.llm = llm
+        self.item2text = item2text
 
     def _parse(
-        self, document: tp.Union[str, AIMessage], candidates: tp.Dict[str, str]
+        self, document: tp.Union[str, AIMessage], candidate_ids: tp.List[str], candidate_texts: tp.List[str]
     ) -> tp.List[tp.Any]:
         """
         Parses the output of LLM by sorting the occurences of each title text from candidate_items.
@@ -100,8 +102,10 @@ class RankerRecommender(Recommender):
         """
         if isinstance(document, AIMessage):
             document = document.content
+            
+        document = document.replace("**", "")
         positions = []
-        for idx, candidate in enumerate(candidates.values()):
+        for idx, candidate in enumerate(candidate_texts):
             try:
                 candidate = candidate.split(";")[0].split(":")[1]
             except:
@@ -111,13 +115,14 @@ class RankerRecommender(Recommender):
                 positions.append(candidate_match.start())
             else:
                 positions.append(len(document) + idx)
+        
         ranked_item_ids = [
-            cand_id for rank, cand_id in sorted(zip(positions, list(candidates.keys())))
+            cand_id for rank, cand_id in sorted(zip(positions, list(candidate_ids)))
         ]
         return ranked_item_ids
 
     def recommend(
-        self, prev_interactions: tp.Dict[str, str], candidates: tp.Dict[str, str]
+        self, prev_interactions: tp.List[str], candidates: tp.List[str],  user_profile: str= None
     ) -> tp.List[tp.Any]:
         if len(candidates) < 2:
             raise ValueError(f"User has to have at least two candidate for ranking")
@@ -125,37 +130,41 @@ class RankerRecommender(Recommender):
             warnings.warn(
                 f"User should have previous interaction data available for ranking"
             )
-        prev_items = list(prev_interactions.values())
-        candidate_items = list(candidates.values())
+        
+        prev_items_texts = [self.item2text(item_id) for item_id in prev_interactions]#list(prev_interactions.values())
+        candidate_items_texts = [self.item2text(item_id) for item_id in candidates]#list(candidates.values())
 
         # Get last item and next item info for in_context and recency prompts
-
-        last_item = prev_items[-1]
-        next_item = prev_items[-1]
+        last_item = prev_items_texts[-1]
+        next_item = prev_items_texts[-1]
         if "next_item" in self.prompt.input_variables:
-            if len(prev_items) >= 2:
-                last_item = prev_items[-2]
-                prev_items = prev_items[:-1]
+            if len(prev_items_texts) >= 2:
+                last_item = prev_items_texts[-2]
+                prev_items_texts = prev_items_texts[:-1]
             elif len(prev_interactions) > 0:
-                prev_items = prev_items[:-1]
+                prev_items_texts = prev_items_texts[:-1]
+        
         prompt = self.prompt.format(
-            prev_interactions=",\n".join(prev_items),
-            num_candidates=len(candidate_items),
-            candidates=",\n".join(candidate_items),
+            prev_interactions=",\n".join(prev_items_texts),
+            num_candidates=len(candidate_items_texts),
+            candidates=",\n".join(candidate_items_texts),
             next_item=next_item,
             last_item=last_item,
         )
 
+        if user_profile is not None:
+            prompt = "My profile: "+ user_profile +'.\n' + prompt
+
         result = self.llm.invoke(prompt)
 
-        ranked_items = self._parse(result, candidates)
+        ranked_items = self._parse(result, candidates, candidate_items_texts)
 
         if sum(
             [
                 (c_item == r_item) * 1
-                for c_item, r_item in zip(list(candidates.keys()), ranked_items)
+                for c_item, r_item in zip(list(candidates), ranked_items)
             ]
-        ) == len(candidate_items):
+        ) == len(candidates):
             warnings.warn(
                 "The ranking stage failed. The order of candidates remained the same"
             )

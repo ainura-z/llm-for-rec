@@ -21,7 +21,7 @@ class GeneralRecBoleModelWrapper(Recommender):
         self.user_token2id = lambda x: dataset.token2id(self.model.USER_ID, x)
         self.item_id2token = lambda x: dataset.id2token(self.model.ITEM_ID, x)
 
-    def recommend(self, user_token_id: str):
+    def recommend(self, user_token_id: str) -> tp.List[str]:
         #self.model.k = top_k
         user_id = self.user_token2id(user_token_id)
         new_inter = {
@@ -31,11 +31,11 @@ class GeneralRecBoleModelWrapper(Recommender):
         _, top_indices = torch.topk(scores, k=self.top_k, largest=True, sorted=True)
 
         # Convert item indices to item tokens
-        recommended_item_tokens = self.item_id2token(top_indices.cpu().numpy().flatten())
+        recommended_item_tokens = list(self.item_id2token(top_indices.cpu().numpy().flatten()))
 
         return recommended_item_tokens
         
-
+        
 class SequentialRecBoleModelWrapper(Recommender):
     def __init__(self, model, config, dataset, top_k, **kwargs):
         model_config = config.copy()
@@ -47,7 +47,7 @@ class SequentialRecBoleModelWrapper(Recommender):
         self.item_token2id = lambda x: dataset.token2id(self.model.ITEM_ID, x)
 
 
-    def recommend(self, prev_interactions: tp.List[str], candidates: tp.List[str] = None):
+    def recommend(self, prev_interactions: tp.List[str], candidates: tp.List[str] = None) -> tp.List[str]:
         prev_interaction_ids = [self.item_token2id(token) for token in prev_interactions]
         new_inter = {
             self.model.ITEM_SEQ: torch.tensor(prev_interaction_ids).unsqueeze(0),
@@ -60,5 +60,5 @@ class SequentialRecBoleModelWrapper(Recommender):
             scores = scores[candidate_ids]
 
         _, top_indices = torch.topk(scores, k=self.top_k, largest=True, sorted=True)
-        recommended_item_tokens = self.item_id2token(top_indices.cpu().numpy().flatten())
+        recommended_item_tokens = [candidates[idx] for idx in list(top_indices.cpu().numpy().flatten())]
         return recommended_item_tokens

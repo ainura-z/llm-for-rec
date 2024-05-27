@@ -30,6 +30,7 @@ class RetrievalRecommender(Recommender):
     def __init__(
         self,
         items_info_path: str,
+        item2text: tp.Callable,
         embeddings: Embeddings = None,
         item_memory: BaseMemory = None,
         load_from_file: bool = True,
@@ -57,7 +58,7 @@ class RetrievalRecommender(Recommender):
             query (str, optional): Custom query for the retrieval. Defaults to None.
 
         """
-
+        self.item2text = item2text
         self.item_memory = item_memory
         self.text_splitter = CharacterTextSplitter(**text_splitter_args)
 
@@ -96,21 +97,21 @@ class RetrievalRecommender(Recommender):
         docs = self.text_splitter.split_documents(documents)
         return docs
 
-    def _prepare_prev_interactions(self, prev_interactions: tp.List[str]) -> str:
-        prev_interactions = " ".join(
+    def _prepare_prev_interactions(self, prev_interactions_texts: tp.List[str]) -> str:
+        prev_interactions_str = " ".join(
             [
                 f"Content-{idx}: {content}"
-                for idx, content in enumerate(prev_interactions)
+                for idx, content in enumerate(prev_interactions_texts)
             ]
         )
-        return prev_interactions
+        return prev_interactions_str
 
     def _filter_prev_interactions(
-        self, reco_items: tp.List[str], prev_interactions: tp.Dict[str, str]
+        self, reco_items: tp.List[str], prev_interactions: tp.List[str]
     ) -> tp.List[str]:
         filtered_items = list(
             dict.fromkeys(
-                x for x in dict.fromkeys(reco_items) if x not in prev_interactions
+                x for x in dict.fromkeys(reco_items) if x not in dict.fromkeys(prev_interactions)
             ).keys()
         )
         return filtered_items
@@ -127,9 +128,9 @@ class RetrievalRecommender(Recommender):
 
     def recommend(
         self,
-        user_profile: str,
-        prev_interactions: tp.Dict[str, str],
+        prev_interactions: tp.List[str],
         top_k: int,
+        user_profile: str = "",
         filter_viewed: bool = True,
         candidates: tp.Any = None
     ) -> tp.List[tp.Any]:
@@ -137,10 +138,12 @@ class RetrievalRecommender(Recommender):
             raise ValueError(
                 f"The user must have at least one interaction with the content."
             )
-        prev_items = self._prepare_prev_interactions(list(prev_interactions.values()))
-        self._set_top_k(top_k + len(prev_interactions.values()) if filter_viewed else top_k)
+        prev_interactions_texts = [self.item2text(item) for item in prev_interactions]
+        prev_items = self._prepare_prev_interactions(prev_interactions_texts)
+        self._set_top_k(top_k + len(prev_interactions_texts) if filter_viewed else top_k)
 
         query = self.query.format(user_profile=user_profile, user_history=prev_items)
+
         documents = self.retriever.get_relevant_documents(query)
         parsed_item_ids = self.parse(documents)
         item_ids = self._remove_duplicate_item_ids(parsed_item_ids)

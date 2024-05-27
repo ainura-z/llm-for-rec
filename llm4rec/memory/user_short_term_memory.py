@@ -12,7 +12,7 @@ class UserShortTermMemory(BaseMemory):
     reflect_prompt_template = PromptTemplate(
         template="You are a helper to understand user needs and preferences in terms of content. "
         + "The user has interacted with following items and gave following ratings: \n{items_with_rating}. "
-        + "Summarize user preferences based on the items the user has interacted with in four sentences. "
+        + "Summarize user preferences based on the items the user has interacted with in one sentence. "
         + "User preferences: ",
         input_variables=["items_with_rating"],
     )
@@ -44,7 +44,6 @@ class UserShortTermMemory(BaseMemory):
         self.item_memory = item_memory
 
         # Storing the number of updates for each user
-
         self.update_counts = {}
 
     def update(self, id: str, data: tp.Any) -> None:
@@ -78,6 +77,9 @@ class UserShortTermMemory(BaseMemory):
         ]
         prompt = self.reflect_prompt.format(items_with_rating="\n".join(interactions))
         history_summary = self.llm.invoke(prompt)
+
+        if history_summary[:len(prompt)] == prompt:
+            history_summary = history_summary[len(prompt):]
         return history_summary
 
     def retrieve(self, id: str, *args, **kwargs) -> tp.Any:

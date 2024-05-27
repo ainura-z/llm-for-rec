@@ -130,7 +130,7 @@ class UserMemory:
     def get_long_term_memory(self, id: str) -> tp.Any:
         return self.long_term_memory[id]
 
-    def construct_user_profile(self, id: str) -> str:
+    def construct_user_profile(self, id: str, use_short_term: bool=False, use_long_term: bool=False) -> str:
         """
         Create user profile information by concatenating available information
         about user from dataset, short-term memory reflection and long-term memory retrieved values.
@@ -143,11 +143,15 @@ class UserMemory:
             profile += f" attributes: {self.user_attributes(id)}\n"
         else:
             profile += "\n"
-        update_counts = len(self.short_term_memory[id])
-        if (update_counts - 1) % self.update_long_term_every != 0:
-            profile += f"User recent preferences: {short_term_pref}\n"
-        profile += f"User long-term preferences: {long_term_pref}."
+        
+        if use_short_term:
+            update_counts = self.short_term_memory.get_update_counts(id)
+            if (update_counts - 1) % self.update_long_term_every != 0:
+                profile += f"User recent preferences: {short_term_pref}\n"
+        if use_long_term:
+            profile += f"User long-term preferences: {long_term_pref}."
 
+        #self.llm.invoke("Construct user profile using the following information: ")
         return profile
 
     def save(self, folder_path: str) -> None:
