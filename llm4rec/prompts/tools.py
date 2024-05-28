@@ -5,12 +5,6 @@ RETRIEVAL_TOOL_DESC = """
                     """
 
 
-ITEM_DATASET_PAIR_INFO_DESC = """
-                            Tool for mapping id of the item to its attributes.
-                            This is an auxiliary tool, which is used before Ranker.
-                            """
-
-
 RANKER_DESC = """
             Tool is used to rank candidate items.
             This tool should be used after retrieval tools.
@@ -19,15 +13,13 @@ RANKER_DESC = """
 
 _TOOL_DESC = {
     "RETRIEVAL_TOOL_DESC": RETRIEVAL_TOOL_DESC,
-    "RANKER_DESC": RANKER_DESC,
-    "ITEM_DATASET_PAIR_INFO_DESC": ITEM_DATASET_PAIR_INFO_DESC
+    "RANKER_DESC": RANKER_DESC
 }
 
 
 OVERALL_TOOL_DESC = """
 - "retrieval_recommender": {RETRIEVAL_TOOL_DESC}
 - "ranker_recommender": {RANKER_DESC}
-- "item_dataset_pair_info": {ITEM_DATASET_PAIR_INFO_DESC}
 """.format(
     **_TOOL_DESC
 )
@@ -36,5 +28,4 @@ OVERALL_TOOL_DESC = """
 RULES = """
         - Retrieval tool should be first invoked.
         - Ranker tool should be invoked after retrieval tool.
-        - If Ranker will be invoked, then item_dataset_pair_info tool should be invoked before ranker tool as retrieval tool returns only ids.
         """
