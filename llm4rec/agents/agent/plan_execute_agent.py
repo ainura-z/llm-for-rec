@@ -64,7 +64,7 @@ class PlanExecuteAgent(SimpleAgent):
     def recommend(
             self,
             user_profile: str,
-            prev_interactions: tp.Dict[str, str],
+            prev_interactions: tp.List[str],
             top_k: int
             ):
         
