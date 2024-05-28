@@ -1,7 +1,7 @@
 RETRIEVAL_TOOL_DESC = """
                     Tool for finding similar candidate items based on previous interactions of the user.
                     This tool should be used as a first stage of recommendation pipeline.
-                    This tool has 3 parameters: user_profile, which is just a string, previous_interactions, which is dictionary of item id and attribute, and top_k. 
+                    This tool has 3 parameters: user_profile, which is just a string, previous_interactions, which is a list of item ids, and top_k. 
                     """
 
 
