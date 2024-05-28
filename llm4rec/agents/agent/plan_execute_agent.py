@@ -10,6 +10,11 @@ import re
 
 
 class PlanExecuteAgent(SimpleAgent):
+    """
+    Implementation of a Plan-and-Execute Agent.
+    This method orchestrates a loop pipeline involving the participation 
+    of an Agent Planner, Agent Reflection, and Agent Executor.
+    """
     def __init__(
             self,
             tools: tp.Sequence[BaseTool],
@@ -25,7 +30,23 @@ class PlanExecuteAgent(SimpleAgent):
             max_iter_steps: int = 3,
             verbose: bool = True,
             ):
-        
+        """
+        Args:
+            tools (Sequence[BaseTool]): A sequence of tools necessary for performing the action.
+            *args (Any): Additional positional arguments for the method.
+            llm_executor (Optional[Any]): LLM for Agent Executor.
+            llm_for_planning (Optional[Any]): LLM for Agent Planning.
+            llm_for_reflection (Optional[Any]): LLM used for Agent Reflection.
+            prompt_for_agent_executor (Optional[str]): A prompt for the executor agent.
+            prompt_for_agent_planning (Optional[str]): A prompt for the planning agent.
+            prompt_for_agent_replanning (Optional[str]): A prompt for the replanning agent.
+            prompt_for_agent_reflection (Optional[str]): A prompt for the reflection agent.
+            planning (bool): A flag indicating whether planning is enabled or not.
+            reflection (bool): A flag indicating whether reflection is enabled or not.
+            max_iter_steps (int): Maximum number of iteration steps.
+            verbose (bool): Verbosity flag indicating whether to print detailed information.
+            **kwargs (Any): Additional keyword arguments for the method.
+        """
         super().__init__(
                         tools=tools,
                         llm_executor=llm_executor,
@@ -50,13 +71,15 @@ class PlanExecuteAgent(SimpleAgent):
 
         return plan["steps"]
     
-    def _create_agent_planner(self) -> None:
+    def _create_agent_planner(self):
+        """Method for inititalizing the Agent Planner"""
+
         self.prompt_for_agent_planning = ChatPromptTemplate.from_template(self.prompt_for_agent_planning)
         planner = self.prompt_for_agent_planning | self.llm_for_planning | self._parse_agent_planning
         return planner
     
     
-    def _create_agent_reflection(self) -> None:
+    def _create_agent_reflection(self):
         self.prompt_for_agent_replanning = ChatPromptTemplate.from_template(self.prompt_for_agent_replanning)
         reflection = self.prompt_for_agent_replanning | self.llm_for_reflection
         return reflection

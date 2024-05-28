@@ -37,6 +37,23 @@ class AgentBase(metaclass=ABCMeta):
         verbose: bool = True,
         **kwargs: tp.Any
     ) -> None:
+        """
+        Args:
+            tools (Sequence[BaseTool]): A sequence of tools necessary for performing the action.
+            *args (Any): Additional positional arguments for the method.
+            llm_executor (Optional[Any]): LLM for Agent Executor.
+            llm_for_planning (Optional[Any]): LLM for Agent Planning.
+            llm_for_reflection (Optional[Any]): LLM used for Agent Reflection.
+            prompt_for_agent_executor (Optional[str]): A prompt for the executor agent.
+            prompt_for_agent_planning (Optional[str]): A prompt for the planning agent.
+            prompt_for_agent_replanning (Optional[str]): A prompt for the replanning agent.
+            prompt_for_agent_reflection (Optional[str]): A prompt for the reflection agent.
+            planning (bool): A flag indicating whether planning is enabled or not.
+            reflection (bool): A flag indicating whether reflection is enabled or not.
+            max_iter_steps (int): Maximum number of iteration steps.
+            verbose (bool): Verbosity flag indicating whether to print detailed information.
+            **kwargs (Any): Additional keyword arguments for the method.
+        """
         self.verbose = verbose
         self.tools = tools
         self.max_iter_steps = max_iter_steps
