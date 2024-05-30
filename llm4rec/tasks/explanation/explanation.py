@@ -41,7 +41,7 @@ class ExplainableRecommender:
         """
         Constructs the prompt based on liked and disliked movies.
         """
-        prompt = ''
+        prompt = 'There is a person {user_profile}.\n'
         if len(movies_liked) > 0 and len(movies_disliked) > 0:
             prompt += "The person has a list of liked items: {movies_liked}. "
             prompt += "The person has a list of disliked items: {movies_disliked}. "
@@ -59,7 +59,7 @@ class ExplainableRecommender:
                      .
                   """
 
-        prompt_template = PromptTemplate(template=prompt, input_variables=["movies_liked", "movies_disliked", "candidate_item"])
+        prompt_template = PromptTemplate(template=prompt, input_variables=["user_profile", "movies_liked", "movies_disliked", "candidate_item"])
         return prompt_template
 
 
@@ -68,6 +68,7 @@ class ExplainableRecommender:
         user_interaction: Interaction, 
         history_names: tp.List[str], 
         candidate_item: str, 
+        user_profile: str = ""
     ):
         """
         Generates explanations for recommendations based on user preferences.
@@ -80,12 +81,8 @@ class ExplainableRecommender:
 
 
         prompt_template = self._construct_prompt(movies_liked.tolist(), movies_disliked.tolist())
-        prompt_formatted = prompt_template.format(movies_liked=', '.join(movies_liked), movies_disliked= ', '.join(movies_disliked), candidate_item=candidate_item)
 
         chain = LLMChain(prompt=prompt_template, llm=self.llm, verbose=True)
-        explanation = chain.run({'movies_liked':', '.join(movies_liked), 'movies_disliked': ', '.join(movies_disliked),'candidate_item': candidate_item})
-
-        if prompt_formatted in explanation:
-            explanation = explanation.replace(prompt_formatted,"").strip()
+        explanation = chain.run({"user_profile": user_profile, 'movies_liked':', '.join(movies_liked), 'movies_disliked': ', '.join(movies_disliked),'candidate_item': candidate_item})
 
         return explanation
