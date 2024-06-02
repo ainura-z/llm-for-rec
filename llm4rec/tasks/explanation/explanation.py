@@ -1,12 +1,14 @@
 import torch
 import os
 import typing as tp
-from langchain import PromptTemplate, LLMChain
+from llm4rec.tasks.base_recommender import Recommender
 from recbole.data.interaction import Interaction
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.language_models.llms import BaseLLM
+from langchain import PromptTemplate, LLMChain
 
-class ExplainableRecommender:
+
+class ExplainableRecommender(Recommender):
     """
     Class for building the explanation about recommended candidate items to user.
 
@@ -14,7 +16,10 @@ class ExplainableRecommender:
         config (str): The config file from RecBole.
         llm: The LLM model for building an explanation. 
     """
-    def __init__(self, config: tp.Dict[str, tp.Any], llm: tp.Union[BaseChatModel, BaseLLM]):
+    def __init__(self, 
+                 config: tp.Dict[str, tp.Any], 
+                 llm: tp.Union[BaseChatModel, BaseLLM]
+                 ):
         """
         Initializes the ExplainableRecommender.
 
@@ -63,7 +68,7 @@ class ExplainableRecommender:
         return prompt_template
 
 
-    def explain_recommendations(
+    def recommend(
         self,
         user_interaction: Interaction, 
         history_names: tp.List[str], 
