@@ -13,27 +13,6 @@ class BaseInput(BaseModel):
         description="previous interactions for model"
     )
 
-
-"""class BaseRecommendTool(BaseTool):
-    name: str = "Basic Recommendation"
-    description: str = "This tool does something"
-    return_direct: bool = True     
-
-    def __init__(self, task: Recommender, ):
-        super(BaseRecommendTool, self).__init__(task=task,
-                                                name=name, 
-                                                description=description,
-                                                args_schema=args_schema)
-       
-    def _run(self, **kwargs) -> tp.List[tp.Any]:
-        recos = self.task.recommend(**kwargs)
-        return recos
-    
-    def _arun(self, **kwargs) -> tp.List[tp.Any]:
-        recos = self.task.recommend(**kwargs)
-        return recos"""
-
-
 def _recommend(task, **kwargs) -> tp.List[tp.Any]:
     rec_output = task.recommend(**kwargs)
     return rec_output

@@ -1,7 +1,7 @@
 import typing as tp
 from langchain.tools import Tool
 from langchain_core.pydantic_v1 import BaseModel, Field
-from llm4rec.tools import create_tool
+from llm4rec.agent.tools import create_tool
 from llm4rec.tasks.base_recommender import Recommender
 
 

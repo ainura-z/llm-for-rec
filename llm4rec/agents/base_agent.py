@@ -1,6 +1,6 @@
 from abc import ABCMeta
 from langchain.tools import BaseTool
-from llm4rec.prompts import PROMPT_FOR_USER, EXECUTOR_PROMPT, PLANNER_PROMPT, REPLANNER_PROMPT
+from llm4rec.agents.prompts import PROMPT_FOR_USER, EXECUTOR_PROMPT, PLANNER_PROMPT, REPLANNER_PROMPT
 import typing as tp
 
 
