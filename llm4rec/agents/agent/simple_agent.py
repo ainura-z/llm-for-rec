@@ -1,3 +1,4 @@
+import re
 import typing as tp
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.prompts import ChatPromptTemplate
@@ -86,7 +87,12 @@ class SimpleAgent(AgentBase):
                                 handle_parsing_errors=True)
         return agent_executor
 
-        
+
+    def _parse_agent_output(self, agent_output: str) -> tp.List[int]:
+        items = re.findall(r'\d+\.\s(\d+)', agent_output)
+        return [int(item) for item in items]
+ 
+
     def recommend(
             self,
             user_profile: str,
@@ -97,5 +103,7 @@ class SimpleAgent(AgentBase):
         prompt_for_user = prepare_input_per_users(self.default_prompt_for_user, user_profile, prev_interactions, top_k)
         
         rec = self.agent_executor.invoke({"input": prompt_for_user})
+
+        rec = self._parse_agent_output(rec['output'])
 
         return rec
