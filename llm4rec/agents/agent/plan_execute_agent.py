@@ -84,6 +84,10 @@ class PlanExecuteAgent(SimpleAgent):
         reflection = self.prompt_for_agent_replanning | self.llm_for_reflection
         return reflection
         
+    def _parse_agent_output(self, agent_output: str) -> tp.List[int]:
+        items = re.findall(r'\d+\.\s(\d+)', agent_output)
+        return [int(item) for item in items]
+        
     def recommend(
             self,
             user_profile: str,
@@ -106,5 +110,7 @@ class PlanExecuteAgent(SimpleAgent):
 
         agent_response = self.agent_executor.invoke({"input": prompt_for_user\
                                                       + "\nYou should follow the generated plan. Plan:" + '\n'.join([f"{index+1}: {item}" for index, item in enumerate(plan)])})       
+
+        agent_response = self._parse_agent_output(agent_response['output'])
 
         return agent_response
