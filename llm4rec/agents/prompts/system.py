@@ -1,4 +1,4 @@
-from llm4rec.prompts.tools import OVERALL_TOOL_DESC, RULES
+from llm4rec.agents.prompts.tools import OVERALL_TOOL_DESC, RULES
 
 
 PROMPT_FOR_USER= \

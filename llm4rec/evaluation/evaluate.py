@@ -1,5 +1,5 @@
 from llm4rec.dataset import RecboleSeqDataset
-from llm4rec.tasks import RecBoleRetrievalRecommender
+from llm4rec.pipelines import RecBolePipelineRecommender
 from llm4rec.evaluation.trainer import PipelineTrainer
 from recbole.data.utils import data_preparation
 from recbole.config import Config
@@ -42,5 +42,5 @@ if __name__ == "__main__":
                     './llm4rec/configs/overall.yaml',
                     './llm4rec/configs/dataset.yaml']
     
-    result = evaluate_pipeline(config_file_list, RecBoleRetrievalRecommender, 'amazon-books')
+    result = evaluate_pipeline(config_file_list, RecBolePipelineRecommender, 'amazon-books')
     print(result)

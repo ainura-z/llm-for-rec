@@ -1,4 +1,4 @@
-from llm4rec.trainer.pipeline_trainer import PipelineTrainer
+from llm4rec.evaluation.trainer.pipeline_trainer import PipelineTrainer
 
 __all__ = [
     "PipelineTrainer"
