@@ -64,10 +64,10 @@ class PipelineTrainer(Trainer):
                 user_token_id = eval_data.dataset.id2token("user_id", user_id)
 
                 # model part
-                candidates = self.model.run(
+                candidates = self.model.recommend(
                     user_token_id=user_token_id,
                     prev_interactions=prev_interactions,
-                    top_k=self.config['search_kwargs']['k']
+                    top_k=max(self.config['topk'])
                 )
                 candidate_ids = eval_data.dataset.token2id("item_id", candidates)
 

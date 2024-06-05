@@ -1,0 +1,9 @@
+data_path: './dataset_files/amazon-books'
+load_col:
+    inter: ['user_id', 'item_id', 'rating', 'timestamp']
+    item: ["item_id", "title"]
+title_col:
+    'title'
+text_col:
+    ['title', 'categories']
+MAX_ITEM_LIST_LENGTH: 10

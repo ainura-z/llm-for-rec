@@ -4,6 +4,7 @@ from langchain_community.document_loaders.csv_loader import CSVLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.embeddings import Embeddings
 from langchain_core.documents import Document
+import torch
 
 import os
 import typing as tp
@@ -29,19 +30,19 @@ class RetrievalRecommender(Recommender):
 
     def __init__(
         self,
-        items_info_path: str,
         item2text: tp.Callable,
+        items_info_path: str = "",
         embeddings: Embeddings = None,
         item_memory: BaseMemory = None,
         load_from_file: bool = True,
-        csv_loader_args: tp.Dict[tp.Any, tp.Any] = dict(csv_args=None, source_column='item_id'),
+        csv_loader_args: tp.Dict[tp.Any, tp.Any] = dict(csv_args={'delimiter':'\t'}, source_column='item_id:token'),
         text_splitter_args: tp.Dict[str, tp.Any] = dict(
             chunk_size=1000, chunk_overlap=0
         ),
-        search_type: str = None,
-        search_kwargs: tp.Dict[str, tp.Any] = None,
+        search_type: str = 'similarity',
+        search_kwargs: tp.Dict[str, tp.Any] = {"k": 20},
         emb_model_name: str = "all-MiniLM-L6-v2",
-        emb_model_kwargs: tp.Dict[str, tp.Any] = dict(device="cuda:0"),
+        emb_model_kwargs: tp.Dict[str, tp.Any] = {"device":"cuda:0" if torch.cuda.is_available() else "cpu"},
         query=None,
     ):
         """
@@ -67,7 +68,9 @@ class RetrievalRecommender(Recommender):
                 raise FileNotFoundError("CSV file not found.")
             docs = self._load_from_file(items_info_path, csv_loader_args)
         else:
-            assert type(self.item_memory) != type(None)
+            if type(self.item_memory) == type(None):
+                raise ValueError("Item memory instance should be provided.")
+            
             docs = self._load_from_memory()
             
         if not embeddings:

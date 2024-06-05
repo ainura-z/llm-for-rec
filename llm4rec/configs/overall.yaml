@@ -6,7 +6,7 @@ repeatable: True
 loss_type: CE
 
 train_batch_size: 100
-eval_batch_size: 2
+eval_batch_size: 8
 valid_metric: NDCG@10
 metrics: ["Recall", "NDCG"]
 topk: [1, 5, 10, 20]

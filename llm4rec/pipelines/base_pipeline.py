@@ -13,5 +13,5 @@ class PipelineBase(metaclass=ABCMeta):
         self.verbose = verbose
 
     @abstractmethod
-    def run(self, data: tp.Any, *args: tp.Any, **kwargs: tp.Any):
+    def recommend(self, data: tp.Any, *args: tp.Any, **kwargs: tp.Any):
         raise NotImplementedError

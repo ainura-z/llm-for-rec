@@ -1,0 +1,9 @@
+data_path: './dataset_files/ml-100k'
+load_col:
+    inter: ['user_id', 'item_id', 'rating', 'timestamp']
+    item: ["item_id", "movie_title"]
+title_col:
+    'movie_title'
+text_col:
+    ['movie_title', 'release_year', 'class']
+MAX_ITEM_LIST_LENGTH: 10

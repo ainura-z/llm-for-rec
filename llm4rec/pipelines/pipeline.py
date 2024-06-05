@@ -12,7 +12,7 @@ class Pipeline(PipelineBase):
         if len(self.tasks) == 0:
             raise ValueError("The list of tasks should not be empty!")
 
-    def run(self, *args: tp.Any, **inputs: tp.Any):
+    def recommend(self, *args: tp.Any, **inputs: tp.Any):
         for i, task in enumerate(self.tasks):
             if "transform" in dir(task): 
                 run_method = task.transform

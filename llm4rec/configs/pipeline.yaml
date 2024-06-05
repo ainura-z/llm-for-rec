@@ -1,6 +1,0 @@
-csv_args:
-    delimiter: "\t"
-source_column:
-    item_id:token
-search_kwargs:
-    k: 20

@@ -4,26 +4,20 @@ from llm4rec.evaluation.trainer import PipelineTrainer
 from recbole.data.utils import data_preparation
 from recbole.config import Config
 from recbole.model.abstract_recommender import AbstractRecommender
-from typing import List
+from torch.utils.data import Dataset 
+from llm4rec.tasks.base_recommender import Recommender
+from llm4rec.tasks import UserAugmentation, ItemAugmentation
+import typing as tp
 import os
 from dotenv import load_dotenv
 
-def evaluate_pipeline(config_file_list: List[str], model_cls: AbstractRecommender, dataset_name: str):
-    config = Config(model=model_cls, dataset=dataset_name, 
-            config_file_list=config_file_list)
-    
-    config['openai_api_key'] = os.environ.get("API_KEY")
-    assert os.path.exists(config['data_path'])
-
-    dataset = RecboleSeqDataset(config)
+def evaluate_pipeline(config: Config, dataset: Dataset, tasks: tp.List[tp.Union[Recommender, ItemAugmentation, UserAugmentation]]):
     _, _, test_data = data_preparation(config, dataset)
 
-    model = model_cls(config=config,
-                    dataset=dataset,
-                    openai_api_key=config['openai_api_key'],
-                    data_path=os.path.join(config['data_path'],
-                    f"{config['dataset']}.item"), csv_args=config['csv_args'],
-                    source_column=config['source_column'])
+    model = RecBolePipelineRecommender(config=config,
+                                    dataset=dataset,
+                                    tasks=tasks, 
+                                    verbose=False)
 
     trainer = PipelineTrainer(config, model)
     test_result = trainer.evaluate(test_data, show_progress=config['show_progress'])
@@ -35,12 +29,31 @@ def evaluate_pipeline(config_file_list: List[str], model_cls: AbstractRecommende
 
 
 if __name__ == "__main__":
-    path_to_openai_env = "../../openai.env"
-    load_dotenv(path_to_openai_env)
+    from llm4rec.tasks import RetrievalRecommender, RankerRecommender
+    from llm4rec.utils.dataset_utils import ml100k_preprocess
+    from langchain_groq import ChatGroq
 
-    config_file_list = ['./llm4rec/configs/pipeline.yaml',
-                    './llm4rec/configs/overall.yaml',
+    config_file_list = ['./llm4rec/configs/overall.yaml',
                     './llm4rec/configs/dataset.yaml']
     
-    result = evaluate_pipeline(config_file_list, RecBolePipelineRecommender, 'amazon-books')
+    dataset_name = 'ml-100k'
+    config = Config(model=RecBolePipelineRecommender, dataset=dataset_name, 
+            config_file_list=config_file_list)
+    
+    dataset = RecboleSeqDataset(config, preprocess_text_fn=ml100k_preprocess))
+    
+    path_to_env = "../../api_keys.env"
+    load_dotenv(path_to_env)
+    llm = ChatGroq(model_name="llama3-70b-8192", temperature=0)
+
+    retrieval = RetrievalRecommender(
+                embeddings=None,
+                item2text=dataset.item_token2text,
+                items_info_path=os.path.join(config['data_path'], f"{config['dataset']}.item"),
+                search_kwargs={'k':max(config['topk'])})
+    
+    ranking = RankerRecommender(llm=llm, item2text=dataset.item_token2text)
+    tasks = [retrieval, ranking]
+    
+    result = evaluate_pipeline(config, dataset, tasks)
     print(result)
