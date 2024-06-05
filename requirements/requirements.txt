@@ -3,6 +3,7 @@ langchain-community
 langchain-core
 langchain-openai
 langchain_groq
+langchain-huggingface
 faiss-cpu
 faiss-gpu
 python-dotenv

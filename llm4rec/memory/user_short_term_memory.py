@@ -2,7 +2,9 @@ from langchain import PromptTemplate
 from llm4rec.memory.base_memory import BaseMemory
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.language_models.llms import BaseLLM
+from langchain.schema import AIMessage
 import typing as tp
+import json
 
 class UserShortTermMemory(BaseMemory):
     """
@@ -77,10 +79,38 @@ class UserShortTermMemory(BaseMemory):
         ]
         prompt = self.reflect_prompt.format(items_with_rating="\n".join(interactions))
         history_summary = self.llm.invoke(prompt)
-
+            
+        if isinstance(history_summary, AIMessage):
+            history_summary = history_summary.content
+            
+        
         if history_summary[:len(prompt)] == prompt:
             history_summary = history_summary[len(prompt):]
         return history_summary
 
     def retrieve(self, id: str, *args, **kwargs) -> tp.Any:
         return self.memory_store.get(id, {})
+        
+    def save(self, filename: str)  -> None:
+        """
+        Save memory values to json file.
+        
+        Args:
+            filename (str): Complete file path and file name ending with extention .json
+        """
+        assert filename.split('.')[-1] == 'json'
+        
+        with open(filename, 'w') as f:
+            json.dump({'memory':self.memory_store, 'update_counts':self.update_counts}, f)
+
+    def load(self, filename):
+        """
+        Load memory values from json file.
+        
+        Args:
+            filename (str): Complete file path and file name ending with extention .json
+        """
+        with open(filename) as f:
+            data = json.load(f)
+            self.memory_store = data['memory']
+            self.update_counts = data['update_counts']

@@ -40,7 +40,7 @@ if __name__ == "__main__":
     config = Config(model=RecBolePipelineRecommender, dataset=dataset_name, 
             config_file_list=config_file_list)
     
-    dataset = RecboleSeqDataset(config, preprocess_text_fn=ml100k_preprocess))
+    dataset = RecboleSeqDataset(config, preprocess_text_fn=ml100k_preprocess)
     
     path_to_env = "../../api_keys.env"
     load_dotenv(path_to_env)
