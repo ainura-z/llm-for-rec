@@ -60,5 +60,8 @@ class SequentialRecBoleModelWrapper(Recommender):
             scores = scores[candidate_ids]
 
         _, top_indices = torch.topk(scores, k=self.top_k, largest=True, sorted=True)
-        recommended_item_tokens = [candidates[idx] for idx in list(top_indices.cpu().numpy().flatten())]
+        if candidates is not None:
+            recommended_item_tokens = [candidates[idx] for idx in list(top_indices.cpu().numpy().flatten())]
+        else:
+            recommended_item_tokens = [self.item_id2token(idx) for idx in list(top_indices.cpu().numpy().flatten())]
         return recommended_item_tokens
