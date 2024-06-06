@@ -5,6 +5,7 @@ from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.language_models.llms import BaseLLM
 from langchain_core.embeddings import Embeddings
 from recbole.data.dataset import Dataset
+from tqdm import tqdm
 
 import numpy as np
 import typing as tp
@@ -65,7 +66,7 @@ class UserMemory:
 
         self.llm = llm
 
-        if load_filename:
+        if load_filename is not None:
             self.load(load_filename)
         self._construct_memory(train_dataset, min_rating, max_rating)
 
@@ -81,8 +82,10 @@ class UserMemory:
         item_id_mapping = lambda item_ids: train_dataset.id2token("item_id", item_ids)
         history_matrix, _, history_lens = history_item_matrix
 
-        for user_id in range(1, len(history_matrix)):
-            if user_id not in self.short_term_memory.memory_store:
+        for user_id in tqdm(range(1, len(history_matrix))):
+            user_id_token = user_id_mapping(user_id)
+
+            if user_id_token not in self.short_term_memory.memory_store:
                 user_history = history_matrix[user_id][: history_lens[user_id]].tolist()
                 ratings = (
                     inter_matrix[user_id, :].toarray() * (max_rating - min_rating)
@@ -143,7 +146,7 @@ class UserMemory:
             profile += f" attributes: {self.user_attributes(id)}\n"
         else:
             profile += "\n"
-        
+
         if use_short_term:
             update_counts = self.short_term_memory.get_update_counts(id)
             if (update_counts - 1) % self.update_long_term_every != 0:

@@ -21,8 +21,7 @@ class Pipeline(PipelineBase):
             
             num_args = run_method.__code__.co_argcount
             arg_names = run_method.__code__.co_varnames#[1:num_args]
-        
-            task_inputs = {arg: inputs[arg] for arg in arg_names if arg in inputs}
+            task_inputs = {arg: inputs[arg] for arg in arg_names[:num_args] if arg in inputs}
 
             outputs = run_method(**task_inputs)
                 

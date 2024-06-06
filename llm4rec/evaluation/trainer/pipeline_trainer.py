@@ -66,6 +66,7 @@ class PipelineTrainer(Trainer):
                 # model part
                 candidates = self.model.recommend(
                     user_token_id=user_token_id,
+                    user_profile=user_token_id,
                     prev_interactions=prev_interactions,
                     top_k=max(self.config['topk'])
                 )
