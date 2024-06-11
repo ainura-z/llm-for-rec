@@ -36,7 +36,7 @@ class RankerRecommender(Recommender):
             + "Note that my most recently interacted item is {last_item}. "
             + "Please show me your ranking results with order numbers. "
             + "Split your output with line break. You MUST rank the given candidate items. "
-            + "You can not generate items that are not in the given candidate list.",
+            + "You can not generate items that are not in the given candidate list. You MUST NOT include items the user has already interacted with.",
             input_variables=[
                 "prev_interactions",
                 "num_candidates",
@@ -51,9 +51,9 @@ class RankerRecommender(Recommender):
             + "I can interact with next:\n{candidates}.\n "
             + "Please rank these {num_candidates} items by measuring the possibilities that "
             + "I would like to interact with next most, according to my interest history. Please think step by step.\n"
-            + "Please show me your ranking results with order numbers. "
+            + "Please show me your ranking results with titles and order numbers. "
             + "Split your output with line break. You MUST rank the given candidate items. "
-            + "You can not generate items that are not in the given candidate list.",
+            + "You can not generate items that are not in the given candidate list. You MUST NOT include items the user has already interacted with.",
             input_variables=[
                 "prev_interactions",
                 "num_candidates",
