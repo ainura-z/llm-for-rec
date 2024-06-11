@@ -1,7 +1,7 @@
 # LLM4Rec
 LLM4Rec is a comprehensive framework for flexible development and reproducible evaluation of LLM-based components in recommendation systems.
 
-![project plan](/docs/imgs/project_structure.jpg)
+![project plan](/docs/imgs/framework_structure.jpg)
 
 # Overview
 Our framework allows to use both sequential processing of recommendation tasks and usage of intelligent agent systems.
@@ -21,16 +21,16 @@ And agents:
 To start working on this project, you need to have `python3` and `pip` installed in your system. Then follow these steps:
 
 1. Clone this repository:
-
-    git clone https://github.com/ainura-z/llm-for-rec.git    
     
+        git clone https://github.com/ainura-z/llm-for-rec.git    
+        
 3. Install dependencies:
-
-    pip install -r requirements.txt
     
+        pip install -r requirements.txt
+        
 2. (Optional) Run example of sequential pipeline evaluate.py
-
-    python3 llm4rec/evaluation/evaluate.py
+    
+        python3 llm4rec/evaluation/evaluate.py
 
 # Examples
 To demonstrate how to work with our framework we provide following examples:
